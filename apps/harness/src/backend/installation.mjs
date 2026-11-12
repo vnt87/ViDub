@@ -17,11 +17,11 @@ export async function existingInstallation(root) {
 /** Validate before persisting the choice or starting any download. */
 export async function installationDirectory(value) {
   if (typeof value !== 'string' || !value.trim() || !isAbsolute(value) || value.includes('\0')) {
-    throw new AppError('INVALID_INSTALL_DIRECTORY', '请选择绝对路径的安装目录。', 422);
+    throw new AppError('INVALID_INSTALL_DIRECTORY', 'Hãy chọn thư mục cài đặt bằng đường dẫn tuyệt đối.', 422);
   }
   const path = resolve(value);
   if (path === parse(path).root || path === homedir()) {
-    throw new AppError('INVALID_INSTALL_DIRECTORY', '请为 YouDub 选择独立的文件夹。', 422);
+    throw new AppError('INVALID_INSTALL_DIRECTORY', 'Hãy chọn một thư mục riêng cho YouDub.', 422);
   }
   await mkdir(path, { recursive: true });
   await access(path, constants.W_OK);

@@ -30,81 +30,81 @@ def _model(
 
 def _whisper_models(devices: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], str | None]:
     if importlib.util.find_spec("whisper") is None or importlib.util.find_spec("torch") is None:
-        return [], "本地 Whisper 需要安装 openai-whisper 和 torch。"
+        return [], "Whisper cục bộ cần cài openai-whisper và torch."
     if shutil.which(ffmpeg_binary()) is None or shutil.which(ffprobe_binary()) is None:
-        return [], "本地媒体处理需要可执行的 FFmpeg 和 FFprobe。"
+        return [], "Xử lý phương tiện cục bộ cần FFmpeg và FFprobe có thể thực thi."
     # Whisper's own load_audio invokes `ffmpeg` by name, independently of the
     # application's configured binary paths used by prepare/export.
     if shutil.which("ffmpeg") is None:
-        return [], "Whisper ASR 还需要 PATH 中可执行的 ffmpeg；仅配置 FFMPEG_PATH 不足以读取音频。"
+        return [], "Whisper ASR còn cần ffmpeg có thể thực thi trong PATH; chỉ cấu hình FFMPEG_PATH là không đủ để đọc âm thanh."
     from .asr import available_models
 
     # OpenAI Whisper stores sparse alignment heads; MPS cannot move these
     # buffers. Keep its ASR on CPU while other providers can use Apple MPS.
     available_devices = [device["id"] for device in devices if device["available"] and device["id"] != "mps"]
     if not available_devices:
-        return [], "没有可执行 Whisper 的 CPU/CUDA/ROCm 设备。"
+        return [], "Không có thiết bị CPU/CUDA/ROCm nào có thể chạy Whisper."
     models = [_model(
         name, available_devices.copy(), ["auto", "en"] if name.endswith(".en") else ["auto", *LANGUAGES], [],
     ) for name in available_models()]
-    return models, None if models else "未找到非空的本地 Whisper .pt 权重；请安装到 Whisper 模型目录。"
+    return models, None if models else "Không tìm thấy trọng số Whisper .pt cục bộ không rỗng; hãy cài vào thư mục mô hình Whisper."
 
 
 def _voxcpm_models(devices: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], str | None]:
     missing = missing_modules(["base", "media", "voxcpm"])
     if missing:
-        return [], f"本地 VoxCPM2 缺少运行依赖：{', '.join(missing)}。"
+        return [], f"VoxCPM2 cục bộ thiếu phụ thuộc chạy: {', '.join(missing)}."
     # Check installed distribution metadata, never import VoxCPM during a GET.
     if not version_supported("voxcpm"):
-        return [], f"本地 VoxCPM2 需要 voxcpm{version_requirement('voxcpm')}，以支持明确的 CPU/CUDA/ROCm/MPS 设备选择。"
+        return [], f"VoxCPM2 cục bộ cần voxcpm{version_requirement('voxcpm')}, để hỗ trợ lựa chọn thiết bị CPU/CUDA/ROCm/MPS rõ ràng."
     if shutil.which(ffmpeg_binary()) is None or shutil.which(ffprobe_binary()) is None:
-        return [], "本地媒体处理需要可执行的 FFmpeg 和 FFprobe。"
+        return [], "Xử lý phương tiện cục bộ cần FFmpeg và FFprobe có thể thực thi."
     from .tts import available_models
 
     available_devices = [device["id"] for device in devices if device["available"]]
     if not available_devices:
-        return [], "没有可执行 VoxCPM2 的 CPU/CUDA/ROCm/MPS 设备。"
+        return [], "Không có thiết bị CPU/CUDA/ROCm/MPS nào có thể chạy VoxCPM2."
     models = [_model(name, available_devices.copy(), list(LANGUAGES), list(LANGUAGES))
               for name in available_models()]
     for model in models:
         model["voice_modes"] = ["source_clone"]
-    return models, None if models else "本地 VoxCPM2 权重或 tokenizer 资产不完整。"
+    return models, None if models else "Trọng số hoặc tài nguyên tokenizer của VoxCPM2 cục bộ không đầy đủ."
 
 
 def _demucs_models(devices: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], str | None]:
     # The child selects this vendored module path, independently of site-packages.
     source = Path(__file__).resolve().parents[3] / "submodule" / "demucs"
     if PathFinder.find_spec("demucs", [str(source)]) is None:
-        return [], "缺少仓库中的 Demucs 子模块源码。"
+        return [], "Thiếu mã nguồn module con Demucs trong kho."
     missing = missing_modules(["media", "demucs"])
     if missing:
-        return [], f"本地 Demucs 缺少运行依赖：{', '.join(missing)}。"
+        return [], f"Demucs cục bộ thiếu phụ thuộc chạy: {', '.join(missing)}."
     if shutil.which(ffmpeg_binary()) is None or shutil.which(ffprobe_binary()) is None:
-        return [], "本地媒体处理需要可执行的 FFmpeg 和 FFprobe。"
+        return [], "Xử lý phương tiện cục bộ cần FFmpeg và FFprobe có thể thực thi."
     from .separate import available_models
 
     available_devices = [device["id"] for device in devices if device["available"]]
     if not available_devices:
-        return [], "没有可执行 Demucs 的 CPU/CUDA/ROCm/MPS 设备。"
+        return [], "Không có thiết bị CPU/CUDA/ROCm/MPS nào có thể chạy Demucs."
     models = [_model(name, available_devices.copy(), [], [])
               for name in available_models()]
-    return models, None if models else "未找到非空的本地 htdemucs 权重。"
+    return models, None if models else "Không tìm thấy trọng số htdemucs cục bộ không rỗng."
 
 
 def _subtitle_alignment_models(devices: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], str | None]:
     missing = missing_modules(["base", "media", "qwen_forced_aligner"])
     if missing:
-        return [], f"本地 Qwen 字幕对齐缺少运行依赖：{', '.join(missing)}。"
+        return [], f"Căn chỉnh phụ đề Qwen cục bộ thiếu phụ thuộc chạy: {', '.join(missing)}."
     if not version_supported("transformers"):
-        return [], f"本地 Qwen 字幕对齐需要 transformers{version_requirement('transformers')}。"
+        return [], f"Căn chỉnh phụ đề Qwen cục bộ cần transformers{version_requirement('transformers')}."
     from .forced_alignment import available_models
 
     available_devices = [device["id"] for device in devices if device["available"]]
     if not available_devices:
-        return [], "没有可执行 Qwen 字幕对齐的 CPU/CUDA/ROCm/MPS 设备。"
+        return [], "Không có thiết bị CPU/CUDA/ROCm/MPS nào có thể chạy căn chỉnh phụ đề Qwen."
     models = [_model(name, available_devices.copy(), [], ["en", "zh"])
               for name in available_models()]
-    return models, None if models else "本地 Qwen3-ForcedAligner-0.6B-hf 权重或 tokenizer 资产不完整。"
+    return models, None if models else "Trọng số hoặc tài nguyên tokenizer của Qwen3-ForcedAligner-0.6B-hf cục bộ không đầy đủ."
 
 
 def runtime_info() -> dict[str, Any]:

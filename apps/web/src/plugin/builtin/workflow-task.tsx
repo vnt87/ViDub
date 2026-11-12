@@ -225,7 +225,7 @@ function NodeDetail({ submissionStore, task, detail, types, error, refresh, requ
     {((canDerive && dirty) || newTaskId) && <Surface as="section" className="space-y-4 p-4">
       <h2 className="font-semibold">{tx("workflow.task.generate.again.with.corrections")}</h2>
       {!preview && <Button disabled={busy || !!newTaskId} variant="outline" onClick={() => void rerunPreview()}><GitBranch />{tx("workflow.task.review.affected.steps")}</Button>}
-      {preview && <><p className="text-sm">{tx("workflow.task.keep.existing.results")}: {preview.reusedSteps.map(nodeName).join('、') || '—'}</p><p className="text-sm">{tx("workflow.task.process.again")}: {preview.dirtySteps.map(nodeName).join('、') || '—'}</p><Button disabled={busy || !!newTaskId} onClick={() => void createDerived()}>{tx("workflow.task.create.task.and.generate")}</Button></>}
+      {preview && <><p className="text-sm">{tx("workflow.task.keep.existing.results")}: {preview.reusedSteps.map(nodeName).join(', ') || '—'}</p><p className="text-sm">{tx("workflow.task.process.again")}: {preview.dirtySteps.map(nodeName).join('、') || '—'}</p><Button disabled={busy || !!newTaskId} onClick={() => void createDerived()}>{tx("workflow.task.create.task.and.generate")}</Button></>}
       {newTaskId && !busy && <Button variant="outline" onClick={() => { void submissionStore.check(submissionKey, request).then(next => { if (next) openDerived(next) }) }}>{tx("workflow.task.check.task.status")}</Button>}
       {newTaskId && !busy && <Button variant="outline" onClick={() => { void submissionStore.discard(submissionKey, request).then(cleared => { if (cleared && activeView.current) { setPreview(null); setFailure('') } }) }}>{tx("workflow.task.return.to.editing")}</Button>}
     </Surface>}

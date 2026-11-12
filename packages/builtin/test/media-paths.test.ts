@@ -15,13 +15,13 @@ async function extracted(root: string, directory: string) {
   return bin
 }
 
-test('Windows 未安装 FFmpeg 时指向首个下载源的目录', async t => {
+test('Windows chưa cài FFmpeg thì trỏ tới thư mục của nguồn tải đầu tiên', async t => {
   const root = await mkdtemp(join(tmpdir(), 'youdub-ffmpeg-directory-'))
   t.after(() => rm(root, { recursive: true, force: true }))
   assert.equal(ffmpegDirectory(root, 'win32'), join(root, 'runtime', 'ffmpeg', sources[0]!, 'bin'))
 })
 
-test('Windows 按实际解压出的 FFmpeg 目录解析，与命中的下载源无关', async t => {
+test('Windows phân giải theo thư mục FFmpeg đã giải nén thực tế, không phụ thuộc nguồn tải', async t => {
   const root = await mkdtemp(join(tmpdir(), 'youdub-ffmpeg-directory-'))
   t.after(() => rm(root, { recursive: true, force: true }))
   const mirror = await extracted(root, sources.at(-1)!)
@@ -30,7 +30,7 @@ test('Windows 按实际解压出的 FFmpeg 目录解析，与命中的下载源�
   assert.equal(ffmpegDirectory(root, 'win32'), github)
 })
 
-test('其他平台直接使用 runtime/ffmpeg', async t => {
+test('các nền tảng khác dùng trực tiếp runtime/ffmpeg', async t => {
   const root = await mkdtemp(join(tmpdir(), 'youdub-ffmpeg-directory-'))
   t.after(() => rm(root, { recursive: true, force: true }))
   assert.equal(ffmpegDirectory(root, 'darwin'), join(root, 'runtime', 'ffmpeg'))

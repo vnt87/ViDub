@@ -4,7 +4,7 @@ import { Film, Loader2 } from "@/lib/icons"
 import { cn } from "@/lib/utils"
 import { useText } from "@/lib/i18n"
 
-// 无可预览媒体时使用稳定的品牌背景；视频首帧由服务端生成缩略图。
+// Khi không có phương tiện xem trước, dùng nền thương hiệu cố định; khung hình đầu của video do máy chủ tạo ảnh thu nhỏ.
 const PALETTES: [string, string][] = [
   ["#fb7299", "#00aeec"],
   ["#ff0033", "#fb7299"],

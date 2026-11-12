@@ -97,7 +97,7 @@ export function WorkflowRun({ document, types, revision, afterInputs, prominent 
           setSourceUrl(event.target.value); setLinkTouched(false); setError('')
           if (event.target.value) changeFile(linkInput, undefined)
         }} />
-        {source && <span className="shrink-0 text-xs text-muted-foreground">{source.platform === 'Bilibili' ? 'B 站' : 'YouTube'}</span>}
+        {source && <span className="shrink-0 text-xs text-muted-foreground">{source.platform === 'Bilibili' ? 'Bilibili' : 'YouTube'}</span>}
         {sourceUrl && <Button variant="ghost" size="icon-sm" disabled={locked} aria-label={tx("workflow.run.clear.link")} onClick={() => { setSourceUrl(''); setLinkTouched(false) }}><X /></Button>}
       </div>
       {linkTouched && linkError && <div className="mt-2"><InlineAlert>{linkError}</InlineAlert></div>}

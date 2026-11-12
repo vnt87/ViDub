@@ -1,9 +1,9 @@
 /** Accept one public video, preserving only its identity and Bilibili part. */
 export function videoSource(value: string): { url: string; platform: 'YouTube' | 'Bilibili' } {
   const match = value.match(/https?:\/\/[^\s<>]+/)
-  if (!match) throw new Error('请输入有效的视频链接。')
+  if (!match) throw new Error('Hãy nhập liên kết video hợp lệ.')
   const url = new URL(match[0].replace(/[，。；！、）)]+$/, ''))
-  if (url.username || url.password || url.port) throw new Error('视频链接不能包含账号或端口。')
+  if (url.username || url.password || url.port) throw new Error('Liên kết video không được chứa tài khoản hoặc cổng.')
   const host = url.hostname.toLowerCase(), path = url.pathname
   let id: string | null = null
   if (host === 'youtu.be') id = path.slice(1)
@@ -17,5 +17,5 @@ export function videoSource(value: string): { url: string; platform: 'YouTube' |
     if (video && (!part || /^[1-9]\d*$/.test(part))) return { url: `https://www.bilibili.com/video/${video}/${part ? `?p=${part}` : ''}`, platform: 'Bilibili' }
   }
   if (host === 'b23.tv' && /^\/[\da-zA-Z]+\/?$/.test(path)) return { url: `https://b23.tv${path}`, platform: 'Bilibili' }
-  throw new Error('请输入 YouTube 或 B 站的单个视频链接。')
+  throw new Error('Hãy nhập một liên kết video YouTube hoặc Bilibili.')
 }

@@ -214,7 +214,7 @@ def test_demucs_uses_childs_vendored_source_path_without_importing_it(all_model_
 
     monkeypatch.setattr(runtime, "PathFinder", SimpleNamespace(find_spec=locate))
     capability = probe_all()["capabilities"][2]
-    assert not capability["available"] and "子模块" in capability["unavailable_reason"]
+    assert not capability["available"] and "module con" in capability["unavailable_reason"]
     assert calls == [("demucs", [str(runtime.Path(runtime.__file__).resolve().parents[3] / "submodule" / "demucs")])]
 
 

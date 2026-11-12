@@ -22,29 +22,29 @@ class PairedPlayer {
     this.volume = 1
     this.root = document.createElement('section')
     this.root.className = 'player'
-    this.root.setAttribute('aria-label', `${demo.title}中英文对照播放器`)
+    this.root.setAttribute('aria-label', `${demo.title}trình phát đối chiếu Anh-Trung`)
     this.root.hidden = true
     this.root.innerHTML = `
-      <div class="player-toolbar"><div class="language-tabs" role="tablist" aria-label="视频语言">
-        <button type="button" role="tab" id="${id}-tab-en" aria-controls="${id}-panel" aria-selected="false" tabindex="-1" data-language="en" disabled>原始英文</button>
-        <button type="button" role="tab" id="${id}-tab-zh" aria-controls="${id}-panel" aria-selected="true" tabindex="0" data-language="zh" disabled>中文配音</button>
+      <div class="player-toolbar"><div class="language-tabs" role="tablist" aria-label="Ngôn ngữ video">
+        <button type="button" role="tab" id="${id}-tab-en" aria-controls="${id}-panel" aria-selected="false" tabindex="-1" data-language="en" disabled>Tiếng Anh gốc</button>
+        <button type="button" role="tab" id="${id}-tab-zh" aria-controls="${id}-panel" aria-selected="true" tabindex="0" data-language="zh" disabled>Lồng tiếng tiếng Trung</button>
       </div></div>
       <div class="video-stage" role="tabpanel" id="${id}-panel" aria-labelledby="${id}-tab-zh">
         <img class="video-poster" src="./assets/${id}-poster.jpg" alt="" />
         <video playsinline preload="auto" muted data-language="en" aria-hidden="true"></video>
         <video playsinline preload="auto" muted data-language="zh" aria-hidden="true"></video>
-        <button class="start-overlay" type="button" aria-label="播放${demo.title}" disabled>${svg('play')}</button>
-        <div class="loading" role="status">正在加载中英文视频…</div>
+        <button class="start-overlay" type="button" aria-label="Phát ${demo.title}" disabled>${svg('play')}</button>
+        <div class="loading" role="status">Đang tải video Anh và Trung…</div>
       </div>
       <div class="controls">
-        <button class="icon-button play" type="button" aria-label="播放" disabled>${svg('play')}</button>
+        <button class="icon-button play" type="button" aria-label="Phát" disabled>${svg('play')}</button>
         <span class="time">0:00 / 0:00</span>
-        <input class="seek" type="range" min="0" max="1" step="0.01" value="0" aria-label="播放进度" disabled>
-        <button class="icon-button mute" type="button" aria-label="静音">${svg('volume')}</button>
-        <input class="volume" type="range" min="0" max="1" step="0.05" value="1" aria-label="音量">
-        <button class="icon-button fullscreen" type="button" aria-label="全屏">${svg('fullscreen')}</button>
+        <input class="seek" type="range" min="0" max="1" step="0.01" value="0" aria-label="Tiến độ phát" disabled>
+        <button class="icon-button mute" type="button" aria-label="Tắt tiếng">${svg('volume')}</button>
+        <input class="volume" type="range" min="0" max="1" step="0.05" value="1" aria-label="Âm lượng">
+        <button class="icon-button fullscreen" type="button" aria-label="Toàn màn hình">${svg('fullscreen')}</button>
       </div>
-      <div class="player-error" role="alert" hidden><div></div><button type="button">重新加载页面</button></div>`
+      <div class="player-error" role="alert" hidden><div></div><button type="button">Tải lại trang</button></div>`
     this.videos = [...this.root.querySelectorAll('video')]
     this.tabs = [...this.root.querySelectorAll('[role=tab]')]
     this.playButton = this.root.querySelector('.play')
@@ -93,7 +93,7 @@ class PairedPlayer {
     this.root.querySelector('.player-error button').addEventListener('click', () => location.reload())
     for (const video of this.videos) {
       video.addEventListener('ended', () => this.pause())
-      video.addEventListener('error', () => this.fail(new Error(`${video.dataset.language === 'zh' ? '中文' : '英文'}视频解码失败：${video.error?.message || `错误代码 ${video.error?.code}`}`)))
+      video.addEventListener('error', () => this.fail(new Error(`${video.dataset.language === 'zh' ? 'Tiếng Trung' : 'Tiếng Anh'}Giải mã video thất bại: ${video.error?.message || `Mã lỗi ${video.error?.code}`}`)))
     }
     document.getElementById('players').append(this.root)
     this.selectLanguage(this.language)
@@ -106,7 +106,7 @@ class PairedPlayer {
     try {
       await Promise.all(this.videos.map(async (video) => {
         const response = await fetch(`./assets/${this.id}-${video.dataset.language}.mp4`)
-        if (!response.ok) throw new Error(`加载${video.dataset.language === 'zh' ? '中文' : '英文'}视频失败：HTTP ${response.status}`)
+        if (!response.ok) throw new Error(`Tải${video.dataset.language === 'zh' ? 'Tiếng Trung' : 'Tiếng Anh'} thất bại: HTTP ${response.status}`)
         const blob = await response.blob()
         const loaded = mediaEvent(video, 'canplay')
         video.src = URL.createObjectURL(blob)
@@ -145,7 +145,7 @@ class PairedPlayer {
     active.muted = this.muted
     const mute = this.root.querySelector('.mute')
     mute.innerHTML = svg(this.muted ? 'muted' : 'volume')
-    mute.setAttribute('aria-label', this.muted ? '取消静音' : '静音')
+    mute.setAttribute('aria-label', this.muted ? 'Bật tiếng' : 'Tắt tiếng')
   }
 
   async start() {
@@ -203,7 +203,7 @@ class PairedPlayer {
     this.seek.disabled = disabled
     for (const tab of this.tabs) tab.disabled = !this.ready || this.failed
     this.playButton.innerHTML = svg(this.playing ? 'pause' : 'play')
-    this.playButton.setAttribute('aria-label', this.playing ? '暂停' : '播放')
+    this.playButton.setAttribute('aria-label', this.playing ? 'Tạm dừng' : 'Phát')
     if (this.scrubbing === undefined) { this.seek.value = String(this.currentTime); this.renderTime(this.currentTime) }
   }
 
@@ -234,8 +234,8 @@ function mediaEvent(video, event) {
       if (error) reject(error); else resolve()
     }
     const ready = () => finish()
-    const failed = () => finish(new Error(`视频错误：${video.error?.message || video.error?.code}`))
-    const timer = setTimeout(() => finish(new Error(`等待视频 ${event} 超时，请重新加载页面。`)), 20000)
+    const failed = () => finish(new Error(`Lỗi video: ${video.error?.message || video.error?.code}`))
+    const timer = setTimeout(() => finish(new Error(`Hết thời gian chờ video ${event}, hãy tải lại trang.`)), 20000)
     video.addEventListener(event, ready, { once: true })
     video.addEventListener('error', failed, { once: true })
   })
@@ -251,7 +251,7 @@ async function seekVideo(video, target) {
 document.querySelector('.demo-picker').innerHTML = Object.entries(demos).map(([id, demo]) => `
   <button class="sample" type="button" aria-pressed="false" data-sample="${id}">
     <img src="./assets/${id}-poster.jpg" alt="" width="64" height="64">
-    <span><strong>${demo.title}</strong><small>${demo.seconds} 秒</small></span>
+    <span><strong>${demo.title}</strong><small>${demo.seconds} giây</small></span>
   </button>`).join('')
 const players = Object.fromEntries(Object.entries(demos).map(([id, demo]) => [id, new PairedPlayer(id, demo)]))
 function selectDemo(id) {

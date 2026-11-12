@@ -201,7 +201,7 @@ test('cancelled derived tasks resume with reused descendants behind unapproved r
 test('task views expose plugin label translations without rewriting snapshots or custom labels', async t => {
   const { ctx, create, until, provider } = await setup(t)
   const describe = provider.describe
-  const localized = { default: 'Document', translations: { zh: '文档', ja: 'ドキュメント' } }
+  const localized = { default: 'Document', translations: { vi: 'Tài liệu', ja: 'ドキュメント' } }
   provider.describe = () => {
     const value = describe()
     value.operations[0].node!.label = localized

@@ -100,7 +100,7 @@ if (process.argv.includes('--installers-only')) {
       appId: 'com.youdub.desktop', productName: 'YouDub',
       directories: { app: project, output }, electronVersion: ownRequire('electron/package.json').version,
       asar: false, npmRebuild: false,
-      electronLanguages: ['en', 'en-US', 'zh-CN', 'ja'],
+      electronLanguages: ['en', 'en-US', 'vi', 'ja'],
       files: desktopFiles,
       extraResources: [{ from: root, to: 'youdub', filter: productResources }, { from: metadata, to: 'build.json' },
         { from: updateConfig, to: 'app-update.yml' },

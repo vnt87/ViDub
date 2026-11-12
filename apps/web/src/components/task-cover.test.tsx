@@ -30,7 +30,7 @@ describe("TaskCover", () => {
     expect(cover.querySelector("svg")).toBeNull()
   })
 
-  it("加载封面图片，处理结束后停止前景动画且保留封面", () => {
+  it("加载封面图片，处理Kết thúc后停止前景动画且Giữ封面", () => {
     const { rerender } = render(<TaskCover {...coverOptions} id="task" src="/cover.jpg" processing />, { wrapper: LanguageProvider })
     const cover = screen.getByTestId("task-cover")
     const image = cover.querySelector("img")!
@@ -38,17 +38,17 @@ describe("TaskCover", () => {
     expect(cover.querySelector("video")).toBeNull()
     expect(cover.querySelectorAll(".animate-eq").length).toBeGreaterThan(0)
     fireEvent.load(image)
-    expect(screen.queryByLabelText("正在加载封面")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Đang tải ảnh bìa")).not.toBeInTheDocument()
     rerender(<TaskCover {...coverOptions} id="task" src="/cover.jpg" />)
     expect(cover.querySelector("img")).toBe(image)
     expect(cover.querySelector(".animate-eq")).toBeNull()
   })
 
-  it("封面加载失败时明确显示错误，新地址可以重新加载", () => {
+  it("Không tải được ảnh bìa时明确显示错误，新地址可以Tải lại", () => {
     const { rerender } = render(<TaskCover {...coverOptions} id="task" src="/broken.jpg" />, { wrapper: LanguageProvider })
     fireEvent.error(screen.getByTestId("task-cover").querySelector("img")!)
-    expect(screen.getByRole("status")).toHaveTextContent("封面加载失败")
-    expect(screen.queryByLabelText("正在加载封面")).not.toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("Không tải được ảnh bìa")
+    expect(screen.queryByLabelText("Đang tải ảnh bìa")).not.toBeInTheDocument()
     rerender(<TaskCover {...coverOptions} id="task" src="/new.jpg" />)
     expect(screen.queryByRole("status")).not.toBeInTheDocument()
     expect(screen.getByTestId("task-cover").querySelector("img")).toHaveAttribute("src", "/new.jpg")

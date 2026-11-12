@@ -6,7 +6,7 @@ import { nodeDescriptors } from './node-contracts.js'
 
 export const name = 'workflow-localize'
 export const inject = ['catalog', 'settings']
-const labels: Record<string, string> = { download: '下载视频', prepare: '准备媒体', separate: '分离人声', recognize: '语音识别', translate: '翻译', reference: '准备参考音频', synthesize: '生成配音', mix: '混音', align: '字幕对齐', export: '导出' }
+const labels: Record<string, string> = { download: 'Tải video', prepare: 'Chuẩn bị phương tiện', separate: 'Tách giọng', recognize: 'Nhận dạng giọng nói', translate: 'Dịch', reference: 'Chuẩn bị âm thanh tham chiếu', synthesize: 'Tạo lồng tiếng', mix: 'Trộn âm thanh', align: 'Căn chỉnh phụ đề', export: 'Xuất' }
 const selection = (extra: JsonObject = {}) => ({ type: 'object', required: ['adapter', 'model', 'device'], additionalProperties: false,
   properties: { adapter: { type: 'string', minLength: 1 }, model: { type: 'string', minLength: 1 }, device: { type: 'string', minLength: 1 }, ...extra } })
 const nullable = (schema: JsonObject) => ({ anyOf: [schema, { type: 'null' }] })
@@ -39,15 +39,15 @@ export async function apply(ctx: Context, plugin: { integrity: string; compatibl
   const pick = (kind: string, config: JsonObject, catalog: CatalogService) => catalog.listProviders().find(item => item.capability === kind && (item.adapter ?? item.id) === config[kind]?.adapter)
   const workflow: WorkflowDefinition = {
     id: 'youdub.localize', version, pluginId, pluginVersion: version, integrity: plugin.integrity, compatibleIntegrities: plugin.compatibleIntegrities,
-    describe: () => ({ id: 'youdub.localize', version, label: '视频翻译与配音', inputs: [{ name: 'video', label: '视频', required: false, acceptedMimeTypes: ['video/*'] }], configSchema: localizeSchema, defaults: structuredClone(defaults()), ui: { editor: 'youdub.localize', sourceUrlInput: 'video' } }),
+    describe: () => ({ id: 'youdub.localize', version, label: 'Dịch và lồng tiếng video', inputs: [{ name: 'video', label: 'Video', required: false, acceptedMimeTypes: ['video/*'] }], configSchema: localizeSchema, defaults: structuredClone(defaults()), ui: { editor: 'youdub.localize', sourceUrlInput: 'video' } }),
     validate: async (inputs, config, catalog) => {
       const errors: Diagnostic[] = []
       const fail = (message: string, field?: string) => errors.push({ code: 'INVALID_CONFIG', message, field })
-      if (Boolean(inputs.video) === Boolean(config.source_url)) fail('请选择本地视频或粘贴一个视频链接。', 'video')
+      if (Boolean(inputs.video) === Boolean(config.source_url)) fail('Hãy chọn video cục bộ hoặc dán một liên kết video.', 'video')
       if (config.source_url) {
         try { videoSource(config.source_url) } catch (error) { fail((error as Error).message, 'source_url') }
         const downloader = catalog.listProviders().find(provider => provider.id === 'youdub.download')
-        if (!downloader?.available) fail(downloader?.unavailableReason || '视频下载服务不可用。', 'source_url')
+        if (!downloader?.available) fail(downloader?.unavailableReason || 'Dịch vụ tải video không khả dụng.', 'source_url')
       }
       const media = catalog.listProviders().find(provider => provider.id === 'youdub.media')
       if (!media?.available) fail(media?.unavailableReason || 'FFmpeg / Media is unavailable.', 'video')
@@ -103,9 +103,9 @@ export async function apply(ctx: Context, plugin: { integrity: string; compatibl
       }
       add('export', 'media', { video, mediaInfo: step('prepare', 'mediaInfo'), transcript: step('recognize', 'transcript'), translation: step('translate', 'translation'), ...(config.tts ? { finalAudio: step('mix', 'finalAudio'), dubbedTimeline: step('mix', 'dubbedTimeline') } : {}), ...(config.subtitle_alignment ? { wordAlignment: step('align', 'wordAlignment') } : {}) })
       const final = (id: string, output: string, label: string) => plan.outputs.push({ id, label, role: id, source: { stepId: 'export', output }, required: true })
-      final('video', 'video', '视频')
-      if (config.output_mode !== 'subtitles') final('audio', 'audio', '配音音频')
-      if (config.output_mode !== 'dubbing') { final('source_subtitles', 'sourceSubtitles', '原文字幕'); final('translated_subtitles', 'translatedSubtitles', '译文字幕') }
+      final('video', 'video', 'Video')
+      if (config.output_mode !== 'subtitles') final('audio', 'audio', 'Âm thanh lồng tiếng')
+      if (config.output_mode !== 'dubbing') { final('source_subtitles', 'sourceSubtitles', 'Phụ đề gốc'); final('translated_subtitles', 'translatedSubtitles', 'Phụ đề đã dịch') }
       return plan
     },
   }

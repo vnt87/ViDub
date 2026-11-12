@@ -28,7 +28,7 @@ export async function legacyDefaultsDocument(defaults: JsonObject, catalog: Cata
   if (!('plan' in workflow)) throw new AppError('DEFAULTS_MIGRATION_BLOCKED', 'The legacy workflow planner is unavailable.', 422)
   const plan = await workflow.plan({}, defaults, catalog)
   const document: WorkflowDocument = {
-    format: 'youdub.workflow', formatVersion: 1, id: legacyDefaultsWorkflowId, title: '原默认处理配置', nodes: [], edges: [],
+    format: 'youdub.workflow', formatVersion: 1, id: legacyDefaultsWorkflowId, title: 'Cấu hình xử lý mặc định cũ', nodes: [], edges: [],
     inputs: workflow.describe().inputs.map(input => ({ id: input.name, label: input.label, required: true, kind: 'artifact', schemaId: 'file/v1', acceptedMimeTypes: [...input.acceptedMimeTypes] })),
     outputs: [], presentation: { positions: { $inputs: { x: 0, y: 120 } }, viewport: { x: 40, y: 40, zoom: 0.6 } },
   }

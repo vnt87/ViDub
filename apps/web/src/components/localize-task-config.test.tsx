@@ -19,7 +19,7 @@ function testRuntime(): Runtime {
       adapter: `test_${kind}`, capability: kind, execution: kind === "translation" ? "remote" : "local",
       available: true, unavailable_reason: null,
       models: [{ id: kind, devices: [kind === "translation" ? "remote" : "cpu"], source_languages: ["en", "zh", "ja", "auto"], target_languages: ["en", "zh", "ja"],
-        voice_modes: kind === "tts" ? ["preset", "source_clone"] : [], voices: kind === "tts" ? [{ id: "voice", name: "测试声音", languages: ["en", "zh", "ja"] }] : [],
+        voice_modes: kind === "tts" ? ["preset", "source_clone"] : [], voices: kind === "tts" ? [{ id: "voice", name: "测试Giọng", languages: ["en", "zh", "ja"] }] : [],
       }],
     })),
   }
@@ -69,7 +69,7 @@ it('labels an AMD device with its actual ROCm backend', () => {
   expect(screen.getByText(/AMD ROCm 0/)).toBeInTheDocument()
 })
 
-it("主页只显示三个基础选项，切换输出后保留设置中的模型和处理配置", async () => {
+it("主页只显示三个基础选项，切换Đầu ra后GiữCài đặt中的Mô hình和处理Cấu hình", async () => {
   const runtime = runtimeWithQwen()
   runtime.capabilities.find((item) => item.capability === "tts")!.models.push({
     ...runtime.capabilities.find((item) => item.capability === "tts")!.models[0], id: "configured-tts",
@@ -85,86 +85,86 @@ it("主页只显示三个基础选项，切换输出后保留设置中的模型�
   }
   render(<LanguageProvider><Options /></LanguageProvider>)
   expect(document.querySelectorAll('[aria-haspopup="menu"]')).toHaveLength(3)
-  expect(screen.queryByLabelText('配音模型')).not.toBeInTheDocument()
-  expect(screen.queryByLabelText('专名提示（可选）')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Lồng tiếngMô hình')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Gợi ý tên riêng (không bắt buộc)')).not.toBeInTheDocument()
   const user = userEvent.setup()
-  await choose(user, '输出内容', '字幕 · 保留原声')
+  await choose(user, 'Nội dung đầu ra', 'Phụ đề · âm thanh gốc')
   expect(changed.mock.calls.at(-1)![0]).toMatchObject({ tts: null, separation: null, subtitle_alignment: null, keep_background: false })
-  await choose(user, '输出内容', '配音')
+  await choose(user, 'Nội dung đầu ra', 'Lồng tiếng')
   expect(changed.mock.calls.at(-1)![0]).toMatchObject({ tts: defaults.tts, separation: defaults.separation, subtitle_alignment: null, keep_background: true })
-  await choose(user, '输出内容', '配音与字幕')
+  await choose(user, 'Nội dung đầu ra', 'Lồng tiếng và phụ đề')
   expect(changed.mock.calls.at(-1)![0]).toEqual(defaults)
 })
 
-describe("本地化任务配置", () => {
-  it("仅配音和字幕模式显示 Qwen 时间选择，退出该模式清除选择", async () => {
+describe("本地化任务Cấu hình", () => {
+  it("仅Lồng tiếng和Phụ đềChế độ显示 Qwen Thời gian选择，退出该Chế độ清除选择", async () => {
     const runtime = runtimeWithQwen()
     const onChange = mount(runtime)
     const user = userEvent.setup()
-    expect(screen.queryByLabelText("字幕时间")).not.toBeInTheDocument()
-    await choose(user, "输出内容", "配音与字幕")
-    expect(screen.getByLabelText("字幕时间")).toHaveTextContent("按字数估算")
-    await choose(user, "字幕时间", "Qwen3-ForcedAligner-0.6B-hf · CPU")
+    expect(screen.queryByLabelText("Phụ đềThời gian")).not.toBeInTheDocument()
+    await choose(user, "Nội dung đầu ra", "Lồng tiếng và phụ đề")
+    expect(screen.getByLabelText("Phụ đềThời gian")).toHaveTextContent("Ước tính theo độ dài văn bản")
+    await choose(user, "Phụ đềThời gian", "Qwen3-ForcedAligner-0.6B-hf · CPU")
     const config = onChange.mock.calls.at(-1)![0]
     expect(config.subtitle_alignment).toEqual(qwenSelection)
-    await choose(user, "输出内容", "字幕 · 保留原声")
+    await choose(user, "Nội dung đầu ra", "Phụ đề · âm thanh gốc")
     expect(onChange.mock.calls.at(-1)![0]).toMatchObject({ tts: null, subtitle_alignment: null })
-    expect(screen.queryByLabelText("字幕时间")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Phụ đềThời gian")).not.toBeInTheDocument()
   })
 
-  it("保存的字幕时间选择保持原值，目标语言不支持时显式提示", async () => {
+  it("Lưu的Phụ đềThời gian选择保持原值，Ngôn ngữ đích不支持时显式提示", async () => {
     const runtime = runtimeWithQwen()
     const defaults: TaskConfig = { ...testConfig, output_mode: "both", subtitle_alignment: qwenSelection,
       tts: { adapter: "test_tts", model: "tts", device: "cpu", voice: { mode: "preset", id: "voice" } } }
     const onChange = mount(runtime, defaults)
-    expect(screen.getByLabelText("字幕时间")).toHaveTextContent("Qwen3-ForcedAligner-0.6B-hf · CPU")
-    await choose(userEvent.setup(), "目标语言", "日本語")
+    expect(screen.getByLabelText("Phụ đềThời gian")).toHaveTextContent("Qwen3-ForcedAligner-0.6B-hf · CPU")
+    await choose(userEvent.setup(), "Ngôn ngữ đích", "日本語")
     const config = onChange.mock.calls.at(-1)![0]
     expect(config.subtitle_alignment).toEqual(qwenSelection)
-    expect(screen.getByLabelText("字幕时间")).toHaveTextContent("Qwen3-ForcedAligner-0.6B-hf · 不可用")
+    expect(screen.getByLabelText("Phụ đềThời gian")).toHaveTextContent("Qwen3-ForcedAligner-0.6B-hf · không khả dụng")
   })
 
-  it("可选 Qwen 不可用时允许原配置，已选择 Qwen 时提示模型不可用", async () => {
+  it("Không bắt buộc Qwen Không khả dụng时允许原Cấu hình，已选择 Qwen 时提示Mô hìnhKhông khả dụng", async () => {
     const runtime = runtimeWithQwen()
     runtime.capabilities.at(-1)!.available = false
-    runtime.capabilities.at(-1)!.unavailable_reason = "未安装模型"
+    runtime.capabilities.at(-1)!.unavailable_reason = "未Đang cài đặtMô hình"
     const defaults: TaskConfig = { ...testConfig, output_mode: "both", subtitle_alignment: qwenSelection,
       tts: { adapter: "test_tts", model: "tts", device: "cpu", voice: { mode: "preset", id: "voice" } } }
     mount(runtime, defaults)
-    expect(screen.getByLabelText("字幕时间")).toHaveTextContent("Qwen3-ForcedAligner-0.6B-hf · 不可用")
-    await userEvent.setup().click(screen.getByLabelText("字幕时间"))
-    expect(await screen.findByRole("menuitem", { name: "Qwen — 未安装模型" })).toBeDisabled()
+    expect(screen.getByLabelText("Phụ đềThời gian")).toHaveTextContent("Qwen3-ForcedAligner-0.6B-hf · không khả dụng")
+    await userEvent.setup().click(screen.getByLabelText("Phụ đềThời gian"))
+    expect(await screen.findByRole("menuitem", { name: "Qwen — 未Đang cài đặtMô hình" })).toBeDisabled()
   })
 
-  it("专名提示默认留空，切换识别模型和输出后保留，允许清空", async () => {
+  it("专名提示默认留空，切换识别Mô hình和Đầu ra后Giữ，允许清空", async () => {
     const runtime = testRuntime()
     runtime.capabilities[0].models.push({ ...runtime.capabilities[0].models[0], id: "second-asr" })
     const onChange = mount(runtime)
     const user = userEvent.setup()
-    const hint = screen.getByLabelText("专名提示（可选）")
+    const hint = screen.getByLabelText("Gợi ý tên riêng (không bắt buộc)")
     expect(hint).toHaveValue("")
-    expect(hint).toHaveAccessibleDescription("填写人名、品牌名，帮助语音识别。")
+    expect(hint).toHaveAccessibleDescription("Thêm tên người hoặc thương hiệu để hỗ trợ nhận dạng giọng nói.")
     await user.type(hint, "YouDub, 张三")
-    await choose(user, "语音识别模型", "second-asr test_asr · CPU")
-    await choose(user, "输出内容", "配音与字幕")
+    await choose(user, "Nhận dạng giọng nóiMô hình", "second-asr test_asr · CPU")
+    await choose(user, "Nội dung đầu ra", "Lồng tiếng và phụ đề")
     expect(onChange.mock.calls.at(-1)![0].asr).toEqual({ adapter: "test_asr", model: "second-asr", device: "cpu", initial_prompt: "YouDub, 张三" })
     expect(hint).toHaveValue("YouDub, 张三")
     await user.clear(hint)
     expect(onChange.mock.calls.at(-1)![0].asr.initial_prompt).toBeNull()
   })
 
-  it("首次启用配音优先可用 VoxCPM2 源音色克隆", async () => {
+  it("首次启用Lồng tiếng优先Sẵn sàng VoxCPM2 源音色克隆", async () => {
     const runtime = runtimeWithVoxCpm()
     const onChange = mount(runtime)
-    await choose(userEvent.setup(), "输出内容", "配音与字幕")
+    await choose(userEvent.setup(), "Nội dung đầu ra", "Lồng tiếng và phụ đề")
     expect(onChange.mock.calls.at(-1)![0]).toMatchObject({
       tts: { adapter: "voxcpm", model: "VoxCPM2", device: "cpu", voice: { mode: "source_clone" } },
       separation: { adapter: "test_separation", model: "separation", device: "cpu" },
     })
-    expect(within(screen.getByRole("tablist", { name: "声音方式" })).getByRole("tab", { name: "克隆源音色" })).toHaveAttribute("aria-selected", "true")
+    expect(within(screen.getByRole("tablist", { name: "Nguồn giọng" })).getByRole("tab", { name: "Nhân bản giọng từ nguồn" })).toHaveAttribute("aria-selected", "true")
   })
 
-  it.each(["unavailable", "no-clone", "unsupported-language", "unavailable-device"])("VoxCPM2 %s 时保留现有可用模型选择", async (reason) => {
+  it.each(["unavailable", "no-clone", "unsupported-language", "unavailable-device"])("VoxCPM2 %s 时Giữ现有Sẵn sàngMô hình选择", async (reason) => {
     const runtime = runtimeWithVoxCpm()
     const voxcpm = runtime.capabilities.at(-1)!
     if (reason === "unavailable") voxcpm.available = false
@@ -172,11 +172,11 @@ describe("本地化任务配置", () => {
     if (reason === "unsupported-language") voxcpm.models[0].target_languages = ["ja"]
     if (reason === "unavailable-device") voxcpm.models[0].devices = ["cuda:0"]
     const onChange = mount(runtime)
-    await choose(userEvent.setup(), "输出内容", "配音")
+    await choose(userEvent.setup(), "Nội dung đầu ra", "Lồng tiếng")
     expect(onChange.mock.calls.at(-1)![0].tts).toEqual({ adapter: "test_tts", model: "tts", device: "cpu", voice: { mode: "preset", id: "voice" } })
   })
 
-  it("尊重已保存的提示和预设声音，显式换 VoxCPM2 时选择源音色克隆", async () => {
+  it("尊重Đã lưu的提示和Giọng cài sẵn，显式换 VoxCPM2 时选择源音色克隆", async () => {
     const runtime = runtimeWithVoxCpm()
     const defaults: TaskConfig = {
       ...testConfig, output_mode: "dubbing", asr: { ...testConfig.asr, initial_prompt: "Saved name" },
@@ -184,21 +184,21 @@ describe("本地化任务配置", () => {
     }
     const onChange = mount(runtime, defaults)
     const user = userEvent.setup()
-    expect(screen.getByLabelText("专名提示（可选）")).toHaveValue("Saved name")
-    expect(within(screen.getByRole("tablist", { name: "声音方式" })).getByRole("tab", { name: "预设声音" })).toHaveAttribute("aria-selected", "true")
-    expect(screen.getByLabelText("声音")).toHaveTextContent("测试声音")
-    await choose(user, "目标语言", "日本語")
+    expect(screen.getByLabelText("Gợi ý tên riêng (không bắt buộc)")).toHaveValue("Saved name")
+    expect(within(screen.getByRole("tablist", { name: "Nguồn giọng" })).getByRole("tab", { name: "Giọng cài sẵn" })).toHaveAttribute("aria-selected", "true")
+    expect(screen.getByLabelText("Giọng")).toHaveTextContent("测试Giọng")
+    await choose(user, "Ngôn ngữ đích", "日本語")
     expect(onChange.mock.calls.at(-1)![0].tts).toEqual(defaults.tts)
-    await choose(user, "配音模型", "VoxCPM2 VoxCPM · CPU")
+    await choose(user, "Lồng tiếngMô hình", "VoxCPM2 VoxCPM · CPU")
     expect(onChange.mock.calls.at(-1)![0].tts).toEqual({ adapter: "voxcpm", model: "VoxCPM2", device: "cpu", voice: { mode: "source_clone" } })
   })
 
-  it("保留背景音时补上分离模型", async () => {
+  it("Giữ âm thanh nền时补上分离Mô hình", async () => {
     const onChange = mount(testRuntime(), { ...testConfig, output_mode: "dubbing", tts: { adapter: "test_tts", model: "tts", device: "cpu", voice: { mode: "preset", id: "voice" } } })
-    expect(screen.getByLabelText("语音识别模型")).toBeInTheDocument()
-    expect(screen.queryByLabelText("音源分离模型")).not.toBeInTheDocument()
-    await userEvent.setup().click(screen.getByRole("switch", { name: "保留背景音" }))
+    expect(screen.getByLabelText("Nhận dạng giọng nóiMô hình")).toBeInTheDocument()
+    expect(screen.queryByLabelText("Tách âm thanh Mô hình")).not.toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole("switch", { name: "Giữ âm thanh nền" }))
     expect(onChange.mock.calls.at(-1)![0]).toMatchObject({ keep_background: true, separation: { adapter: "test_separation", model: "separation", device: "cpu" } })
-    expect(screen.getByLabelText("音源分离模型")).toHaveTextContent("separation test_separation · CPU")
+    expect(screen.getByLabelText("Tách âm thanh Mô hình")).toHaveTextContent("separation test_separation · CPU")
   })
 })

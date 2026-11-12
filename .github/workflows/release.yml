@@ -1,4 +1,4 @@
-name: 桌面版本发布
+name: Phát hành bản desktop
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 已合入 main 且通过候选包验收的版本 tag
+        description: Tag phiên bản đã hợp nhất vào main và qua kiểm tra gói ứng viên
         required: true
         type: string
 
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-      - name: 校验 tag、版本和 main 来源
+      - name: Xác minh tag, phiên bản và nguồn main
         id: release
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
@@ -54,7 +54,7 @@ jobs:
     outputs:
       run-id: ${{ steps.accepted.outputs.run-id }}
     steps:
-      - name: 等待同一 main 提交的候选包验收
+      - name: Chờ kiểm tra gói ứng viên của cùng commit main
         id: accepted
         env:
           GH_TOKEN: ${{ github.token }}
@@ -64,7 +64,7 @@ jobs:
           # Candidates are built manually on the exact main commit being released.
           run_id="$(gh api "repos/$GH_REPO/actions/workflows/harness-development.yml/runs?head_sha=$RELEASE_SHA&event=workflow_dispatch&branch=main" --jq '.workflow_runs[0].id // empty')"
           if [ -z "$run_id" ]; then
-            echo "::error::此 tag 提交没有 main 候选包验收运行；请在 main 手动运行源码检查并启用 package_desktop。"
+            echo "::error::Commit của tag này không có lần chạy kiểm tra gói ứng viên trên main; hãy chạy kiểm tra mã nguồn thủ công trên main và bật package_desktop."
             exit 1
           fi
           gh run watch "$run_id" --exit-status --interval 15
@@ -72,11 +72,11 @@ jobs:
           jq -e --arg sha "$RELEASE_SHA" '.head_sha == $sha and .event == "workflow_dispatch" and .head_branch == "main" and .conclusion == "success"' accepted.json
           gh api --paginate --slurp "repos/$GH_REPO/actions/runs/$run_id/artifacts" > artifacts.json
           if ! jq -e '[.[].artifacts[] | select(.expired == false) | .name] | (index("youdub-macos-unsigned") != null) and (index("youdub-windows-release") != null)' artifacts.json; then
-            echo "::error::同提交验收缺少有效的双平台候选包；请启用 package_desktop 完成构建与安装验收。"
+            echo "::error::Kiểm tra cùng commit thiếu gói ứng viên hợp lệ trên cả hai nền tảng; hãy bật package_desktop để hoàn tất dựng và kiểm tra cài đặt."
             exit 1
           fi
           echo "run-id=$run_id" >> "$GITHUB_OUTPUT"
-          echo "复用 main 提交 $RELEASE_SHA 的候选包：https://github.com/$GH_REPO/actions/runs/$run_id" >> "$GITHUB_STEP_SUMMARY"
+          echo "Dùng lại gói ứng viên của commit main $RELEASE_SHA: https://github.com/$GH_REPO/actions/runs/$run_id" >> "$GITHUB_STEP_SUMMARY"
 
   sign:
     needs: [validate, quality]
@@ -94,7 +94,7 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
-      - name: 安装签名脚本依赖
+      - name: Cài phụ thuộc script ký
         run: |
           npm ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmmirror.com
           npm --prefix apps/harness ci --ignore-scripts --no-audit --no-fund --registry=https://registry.npmmirror.com
@@ -104,11 +104,11 @@ jobs:
           run-id: ${{ needs.quality.outputs.run-id }}
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/unsigned
-      - name: 解包已构建应用
+      - name: Giải nén ứng dụng đã dựng
         run: |
           mkdir -p dist
           tar -xzf "$RUNNER_TEMP/unsigned/youdub-macos-unsigned.tar.gz" -C dist
-      - name: 签名应用
+      - name: Ký ứng dụng
         env:
           YOUDUB_APPLE_CREDENTIALS_DIR: ${{ runner.temp }}/apple-signing
           APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
@@ -120,21 +120,21 @@ jobs:
         run: |
           env GITHUB_SHA="$RELEASE_SHA" GITHUB_REF_TYPE=tag GITHUB_REF_NAME="$RELEASE_TAG" node scripts/prepare-ci-signing.mjs
           env GITHUB_SHA="$RELEASE_SHA" GITHUB_REF_TYPE=tag GITHUB_REF_NAME="$RELEASE_TAG" node scripts/sign-mac.mjs dist/YouDub.app --sign-only
-      - name: 验证桌面服务与运行后签名
+      - name: Xác minh dịch vụ desktop và chữ ký sau khi chạy
         run: |
           node apps/harness/test/package-smoke.mjs dist/YouDub.app dist/package-smoke-signed
           codesign --verify --deep --strict --verbose=2 dist/YouDub.app
-      - name: 通过 TCP 访问 Apple 公证票据服务
+      - name: Truy cập dịch vụ ticket công chứng Apple qua TCP
         # Hosted runners drop HTTP/3 ticket requests: actions/runner-images#14924.
         # This rule is confined to this disposable runner; TLS verification stays enabled.
         run: |
           echo "block return out quick proto udp from any to any port 443" | sudo pfctl -f -
           sudo pfctl -E
-      - name: 打包与 Apple 公证
+      - name: Đóng gói và công chứng Apple
         env:
           YOUDUB_APPLE_CREDENTIALS_DIR: ${{ runner.temp }}/apple-signing
         run: env GITHUB_SHA="$RELEASE_SHA" GITHUB_REF_TYPE=tag GITHUB_REF_NAME="$RELEASE_TAG" node scripts/sign-mac.mjs dist/YouDub.app --package-signed
-      - name: 保留失败的公证包与诊断
+      - name: Giữ lại gói công chứng lỗi và chẩn đoán
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -143,7 +143,7 @@ jobs:
             dist/YouDub-*.dmg
             dist/*notary*.json
           retention-days: 7
-      - name: 清除签名材料
+      - name: Xóa tài liệu ký
         if: always()
         run: rm -rf "$RUNNER_TEMP/apple-signing"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -182,7 +182,7 @@ jobs:
           run-id: ${{ needs.quality.outputs.run-id }}
           github-token: ${{ github.token }}
           path: release
-      - name: 校验并发布 GitHub Release
+      - name: Xác minh và phát hành GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}

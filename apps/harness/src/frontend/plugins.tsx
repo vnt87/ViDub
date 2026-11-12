@@ -10,7 +10,8 @@ import { createNavigationStore } from '../../../../vendor/deepseek-harness/sourc
 import { PluginRefreshToast } from '../../../../vendor/deepseek-harness/source/packages/client/ui-plugin-manager/src/client/PluginRefreshToast'
 import { rowText } from '../../../../vendor/deepseek-harness/source/packages/client/ui-plugin-manager/src/client/presentation'
 import pluginCss from '../../../../vendor/deepseek-harness/source/packages/client/ui-plugin-manager/src/client/PluginManagerPage.module.css'
-import { en, zh } from '../../../../vendor/deepseek-harness/source/packages/client/ui-plugin-manager/src/client/locales'
+import { en } from '../../../../vendor/deepseek-harness/source/packages/client/ui-plugin-manager/src/client/locales'
+import vietnamese from '../../locales/vi.json'
 
 /** Preserve stable source snapshots while selecting this product's installed bundles. */
 function project(source:any, select:(snapshot:any)=>any) {
@@ -31,7 +32,7 @@ function BuiltinYouDub({view,usePluginManager,t,resolveText}:any) {
 export function applyPlugins(ctx:any) {
   const namespace='pluginManager'
   const dictionaries={
-    zh:{...zh,reasonIncompatibleVersion:'{plugin} 与 YouDub 内置框架 {runtime} 不兼容（要求 {requirements}），运行它可能导致崩溃或数据丢失。',reasonIncompatibleVersionUnnamed:'这个插件与当前 YouDub 内置框架不兼容，运行它可能导致崩溃或数据丢失。','youdub.builtinTitle':'YouDub 内置功能','youdub.bundleMissing':'未读取到 YouDub 内置插件信息。','youdub.applicationVersion':'应用版本','youdub.packageVersion':'插件包版本','youdub.bundled':'随 YouDub 提供',title:'插件',intro:'',installDescription:'',infoDescription:'安装和管理 YouDub 插件。',installSpecPlaceholder:'插件包名、Git 仓库地址或本地目录',installGuideIdHint:'填写插件作者提供的 npm 包名。',installGuideIdExample:'@作者/插件名',installUpgradeNotice:'更新插件前，请先卸载再安装新版。'},
+    vi:{...vietnamese.pluginManager,reasonIncompatibleVersion:'{plugin} không tương thích với framework đi kèm YouDub ({runtime}; yêu cầu {requirements}); chạy có thể gây treo ứng dụng hoặc mất dữ liệu.',reasonIncompatibleVersionUnnamed:'Plugin này không tương thích với framework đi kèm YouDub; chạy có thể gây treo ứng dụng hoặc mất dữ liệu.','youdub.builtinTitle':'Tính năng tích hợp của YouDub','youdub.bundleMissing':'Chưa đọc được thông tin plugin tích hợp của YouDub.','youdub.applicationVersion':'Phiên bản ứng dụng','youdub.packageVersion':'Phiên bản gói plugin','youdub.bundled':'Đi kèm YouDub',title:'Plugin',intro:'',installDescription:'',infoDescription:'Cài đặt và quản lý plugin của YouDub.',installSpecPlaceholder:'Tên gói plugin, địa chỉ kho Git hoặc đường dẫn thư mục cục bộ',installGuideIdHint:'Nhập tên gói npm của plugin, ví dụ @tacgia/plugin.',installGuideIdExample:'@tacgia/ten-plugin',installUpgradeNotice:'Để cập nhật plugin, hãy gỡ cài đặt rồi cài lại.'},
     en:{...en,reasonIncompatibleVersion:'{plugin} is incompatible with the framework bundled with YouDub ({runtime}; requires {requirements}); running it may cause crashes or data loss.',reasonIncompatibleVersionUnnamed:'This plugin is incompatible with the framework bundled with YouDub; running it may cause crashes or data loss.','youdub.builtinTitle':'YouDub built-in features','youdub.bundleMissing':'The Host did not report the built-in YouDub bundle.','youdub.applicationVersion':'Application version','youdub.packageVersion':'Bundle version','youdub.bundled':'Included with YouDub',title:'Plugins',intro:'',installDescription:'',infoDescription:'Install and manage YouDub plugins.',installSpecPlaceholder:'Package name, Git repository, or local directory',installGuideIdHint:'Use the npm package name supplied by the plugin author.',installGuideIdExample:'@author/plugin',installUpgradeNotice:'To update a plugin, uninstall it and install the newer version.'},
   }
   ctx.effect(() => ctx.locale.register(namespace,dictionaries))

@@ -35,7 +35,7 @@ function formatClock(value: number) {
   return hours ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}` : `${minutes}:${seconds}`
 }
 
-// 提示用原生 title：自定义浮层挂在 body 上，全屏时不可见。
+// Gợi ý dùng thuộc tính title gốc: lớp phủ tùy chỉnh gắn vào body nên không hiển thị khi toàn màn hình.
 function ControlButton({
   label,
   shortcut,
@@ -144,7 +144,7 @@ export function VideoPlayer({ src }: { src: string }) {
       void container.requestFullscreen().catch(() => {})
       return
     }
-    // iPhone 上的 Safari 只允许视频元素自身进入全屏。
+    // Safari trên iPhone chỉ cho phép chính phần tử video vào chế độ toàn màn hình.
     videoRef.current?.webkitEnterFullscreen?.()
   }
 
@@ -158,7 +158,7 @@ export function VideoPlayer({ src }: { src: string }) {
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const video = videoRef.current
     if (!video || event.metaKey || event.ctrlKey || event.altKey || (event.target as HTMLElement).closest('[role="menu"]')) return
-    // 焦点在进度条/音量滑块上时，方向键交给滑块本身。
+    // Khi tiêu điểm đang ở thanh tiến trình hoặc thanh âm lượng, phím mũi tên được giao cho chính thanh đó.
     const onSlider = event.target instanceof HTMLInputElement
     switch (event.key) {
       case " ":
@@ -230,7 +230,7 @@ export function VideoPlayer({ src }: { src: string }) {
         playsInline
         className="size-full bg-black object-contain"
         onPointerDown={(event) => {
-          // 触屏上控件已隐藏时，第一次轻点只唤出控件，不暂停播放。
+          // Trên màn hình cảm ứng, khi điều khiển đang ẩn, lần chạm đầu tiên chỉ hiện điều khiển, không tạm dừng phát.
           touchRevealRef.current = event.pointerType === "touch" && playing && !controlsVisible
         }}
         onClick={() => {
@@ -281,7 +281,7 @@ export function VideoPlayer({ src }: { src: string }) {
         </Button>
       ) : null}
 
-      {/* 渐变遮罩本身不拦截点击，轻点遮罩区域仍然作用于视频；只有控件可交互。 */}
+      {/* Lớp phủ gradient tự nó không chặn thao tác chạm; chạm vào vùng phủ vẫn tác động lên video, chỉ các điều khiển là tương tác được. */}
       <div
         className={cn(
           "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pt-14 pb-2.5 text-white transition-opacity duration-200 sm:px-4",

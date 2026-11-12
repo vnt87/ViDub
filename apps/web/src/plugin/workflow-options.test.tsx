@@ -7,7 +7,7 @@ import type { Bindings, JsonObject, NodeTypeDefinition, WorkflowDocument } from 
 import { WorkflowOptions } from './builtin/workflow-options'
 import { nodeDescriptors } from '../../../../packages/builtin/src/node-contracts'
 
-const type: NodeTypeDefinition = { type: 'test.options', version: '1', label: '节点', category: 'test', providerId: 'test', operation: 'test', provider: { id: 'test', operations: [] }, inputs: [], outputs: [], defaults: {}, configSchema: { type: 'object' }, ui: { quickFields: [] } }
+const type: NodeTypeDefinition = { type: 'test.options', version: '1', label: 'Nút', category: 'test', providerId: 'test', operation: 'test', provider: { id: 'test', operations: [] }, inputs: [], outputs: [], defaults: {}, configSchema: { type: 'object' }, ui: { quickFields: [] } }
 const useSlot = (() => []) as Bindings<'useSlot'>['useSlot']
 function mount(definition: NodeTypeDefinition, configs: JsonObject[]) {
   const changed = vi.fn()
@@ -23,8 +23,8 @@ afterEach(() => { cleanup(); window.localStorage.clear() })
 it('renders accessible language choices from node metadata without restricting the schema', async () => {
   const descriptor = nodeDescriptors.recognize
   const changed = mount({ ...type, configSchema: descriptor.configSchema, ui: descriptor.ui }, [{ sourceLanguage: 'auto', initialPrompt: 'keep' }])
-  const trigger = screen.getByLabelText('原文语言')
-  expect(trigger).toHaveTextContent('原文语言自动识别')
+  const trigger = screen.getByLabelText('Ngôn ngữ nguồn')
+  expect(trigger).toHaveTextContent('Ngôn ngữ nguồnTự động nhận diện')
   expect(trigger).toHaveAttribute('aria-haspopup', 'menu')
   expect(trigger).toHaveAttribute('aria-expanded', 'false')
   expect(descriptor.configSchema.properties.sourceLanguage.enum).toBeUndefined()
@@ -38,11 +38,11 @@ it('renders accessible language choices from node metadata without restricting t
 })
 
 it('distinguishes repeated node labels and changes only the selected instance', async () => {
-  const changed = mount({ ...type, label: '翻译', configSchema: { properties: { mode: { type: 'string', enum: ['a', 'b'], 'x-title': '模式' } } }, ui: { quickFields: ['mode'] } }, [{ mode: 'a' }, { mode: 'a' }])
+  const changed = mount({ ...type, label: 'Dịch', configSchema: { properties: { mode: { type: 'string', enum: ['a', 'b'], 'x-title': 'Chế độ' } } }, ui: { quickFields: ['mode'] } }, [{ mode: 'a' }, { mode: 'a' }])
   const user = userEvent.setup()
-  await user.click(screen.getByLabelText('翻译 · 1 · 模式'))
+  await user.click(screen.getByLabelText('Dịch · 1 · Chế độ'))
   await user.click(await screen.findByRole('menuitem', { name: 'b' }))
-  expect(screen.getByLabelText('翻译 · 2 · 模式')).toHaveTextContent('a')
+  expect(screen.getByLabelText('Dịch · 2 · Chế độ')).toHaveTextContent('a')
   expect(changed).toHaveBeenLastCalledWith('node-0', { mode: 'b' })
 })
 
@@ -51,13 +51,13 @@ it('preserves a configured language outside the suggestions without mutating nod
   const original = structuredClone(descriptor.configSchema)
   mount({ ...type, configSchema: descriptor.configSchema, ui: descriptor.ui }, [{ sourceLanguage: 'es' }])
   const user = userEvent.setup()
-  await user.click(screen.getByLabelText('原文语言'))
-  expect(await screen.findByRole('menuitem', { name: 'es · 不可用' })).toBeDisabled()
+  await user.click(screen.getByLabelText('Ngôn ngữ nguồn'))
+  expect(await screen.findByRole('menuitem', { name: 'es · không khả dụng' })).toBeDisabled()
   expect(descriptor.configSchema).toEqual(original)
 })
 
 it('edits freeform numeric and text fields in compact menus', async () => {
-  const changed = mount({ ...type, configSchema: { properties: { count: { type: 'integer', 'x-title': '次数', minimum: 1, maximum: 10 }, title: { type: 'string', 'x-title': '名称' } } }, ui: { quickFields: ['count', 'title'] } }, [{ count: 3, title: '' }])
+  const changed = mount({ ...type, configSchema: { properties: { count: { type: 'integer', 'x-title': '次数', minimum: 1, maximum: 10 }, title: { type: 'string', 'x-title': 'Tên' } } }, ui: { quickFields: ['count', 'title'] } }, [{ count: 3, title: '' }])
   const user = userEvent.setup()
   const countTrigger = screen.getByRole('button', { name: '次数' })
   await user.click(countTrigger)
@@ -69,8 +69,8 @@ it('edits freeform numeric and text fields in compact menus', async () => {
   await user.keyboard('{Escape}')
   expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   expect(countTrigger).toHaveFocus()
-  await user.click(screen.getByRole('button', { name: '名称' }))
-  await user.type(await screen.findByRole('textbox', { name: '名称' }), 'hello')
+  await user.click(screen.getByRole('button', { name: 'Tên' }))
+  await user.type(await screen.findByRole('textbox', { name: 'Tên' }), 'hello')
   expect(changed).toHaveBeenLastCalledWith('node-0', { count: 7, title: 'hello' })
 })
 
@@ -79,11 +79,11 @@ it('only offers languages supported by the selected model and disables an unknow
   const provider = { id: 'test', operations: [], capability: 'asr', models: [{ id: 'tiny', source_languages: ['auto', 'en'] }] } as unknown as NodeTypeDefinition['provider']
   mount({ ...type, provider, configSchema: descriptor.configSchema, ui: descriptor.ui }, [{ sourceLanguage: 'asdf' }])
   const user = userEvent.setup()
-  await user.click(screen.getByLabelText('原文语言'))
-  expect(await screen.findByRole('menuitem', { name: 'asdf · 不可用' })).toBeDisabled()
-  expect(screen.getByRole('menuitem', { name: '自动识别' })).toBeInTheDocument()
+  await user.click(screen.getByLabelText('Ngôn ngữ nguồn'))
+  expect(await screen.findByRole('menuitem', { name: 'asdf · không khả dụng' })).toBeDisabled()
+  expect(screen.getByRole('menuitem', { name: 'Tự động nhận diện' })).toBeInTheDocument()
   expect(screen.getByRole('menuitem', { name: 'English' })).toBeInTheDocument()
-  expect(screen.queryByRole('menuitem', { name: '中文' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('menuitem', { name: 'Tiếng Trung' })).not.toBeInTheDocument()
   expect(screen.queryByRole('menuitem', { name: '日本語' })).not.toBeInTheDocument()
 })
 
@@ -95,12 +95,12 @@ it.each([
   const descriptor = nodeDescriptors.translate
   const provider = { id: 'test', operations: [], capability: 'translation', ...state } as NodeTypeDefinition['provider']
   const changed = mount({ ...type, provider, configSchema: descriptor.configSchema, ui: descriptor.ui }, [{ targetLanguage: 'zh' }])
-  const trigger = screen.getByLabelText('译文语言')
-  expect(trigger).toHaveTextContent('译文语言中文')
-  expect(trigger).not.toHaveTextContent('不可用')
+  const trigger = screen.getByLabelText('Bản dịchNgôn ngữ')
+  expect(trigger).toHaveTextContent('Bản dịchNgôn ngữTiếng Trung')
+  expect(trigger).not.toHaveTextContent('Không khả dụng')
   const user = userEvent.setup()
   await user.click(trigger)
-  expect(await screen.findByRole('menuitem', { name: '中文' })).not.toBeDisabled()
+  expect(await screen.findByRole('menuitem', { name: 'Tiếng Trung' })).not.toBeDisabled()
   await user.click(screen.getByRole('menuitem', { name: '日本語' }))
   expect(changed).toHaveBeenLastCalledWith('node-0', { targetLanguage: 'ja' })
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
@@ -111,7 +111,7 @@ it('honors an explicitly empty model language list', async () => {
   const provider = { id: 'test', operations: [], capability: 'translation', models: [{ id: 'no-languages', target_languages: [] }] } as unknown as NodeTypeDefinition['provider']
   mount({ ...type, provider, configSchema: descriptor.configSchema, ui: descriptor.ui }, [{ targetLanguage: 'zh' }])
   const user = userEvent.setup()
-  await user.click(screen.getByLabelText('译文语言'))
-  expect(await screen.findByRole('menuitem', { name: '中文 · 不可用' })).toBeDisabled()
+  await user.click(screen.getByLabelText('Bản dịchNgôn ngữ'))
+  expect(await screen.findByRole('menuitem', { name: 'Tiếng Trung · không khả dụng' })).toBeDisabled()
   expect(screen.queryByRole('menuitem', { name: '日本語' })).not.toBeInTheDocument()
 })

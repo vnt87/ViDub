@@ -77,7 +77,7 @@ test('first run requires all four source models and preserves explicit start, pa
   await assert.rejects(app.request('POST', { action: 'prepare', selections: [] }), error => error.code === 'INVALID_INPUT');
   await assert.rejects(app.request('POST', { action: 'prepare', selections: [{ providerId: 'unknown', model: 'huge' }] }), error => error.code === 'INVALID_INPUT');
   assert.equal(app.calls.length, 0);
-  await assert.rejects(app.request('POST', { action: 'prepare', selections: [{ providerId: 'whisper', model: 'tiny' }] }), error => error.code === 'INVALID_INPUT' && error.message.includes('全部四项'));
+  await assert.rejects(app.request('POST', { action: 'prepare', selections: [{ providerId: 'whisper', model: 'tiny' }] }), error => error.code === 'INVALID_INPUT' && error.message.includes('đủ bốn mô hình'));
   assert.equal(app.calls.length, 0);
   const selections = app.items.map(({ providerId, model }) => ({ providerId, model }));
   const expected = normalize([...firstRunBaseResources, ...selections]);
@@ -173,7 +173,7 @@ test('resource ready cannot release tasks with missing model or dependency readi
     else if (gap === 'dependency') app.resources.requirements[0].ready = false;
     else app.resources.environment[0].status = 'pending';
     const state = await app.request('GET');
-    assert.equal(state.phase, 'failed'); assert.match(state.error, /尚未全部就绪/); assert.equal(state.resourceSelection.prepared, false); assert.equal(app.started, 0);
+    assert.equal(state.phase, 'failed'); assert.match(state.error, /chưa sẵn sàng đầy đủ/); assert.equal(state.resourceSelection.prepared, false); assert.equal(app.started, 0);
     assert.throws(() => app.transport.assertReady('/api/v2/tasks'), error => error.code === 'ENVIRONMENT_NOT_READY');
   });
 });

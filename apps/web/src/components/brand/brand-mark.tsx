@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 import type { CSSProperties } from "react"
 
-// 形状取自 public/youdub-icon.svg：左侧粉色声波、中间红色播放气泡、右侧蓝色声波。
+// Hình dạng lấy từ public/youdub-icon.svg: sóng âm hồng bên trái, bong bóng phát màu đỏ ở giữa, sóng âm xanh bên phải.
 const PINK_BARS = [
   { x: 0, height: 64, delay: -0.62 },
   { x: 42, height: 130, delay: -0.21 },

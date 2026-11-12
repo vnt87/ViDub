@@ -247,7 +247,7 @@ test('uv bootstrap and dependency installation expose live output and select the
     if (args[1] === 'uv' && args[2] === 'pip') {
       request.onOutput('Downloading torch (100MiB)\nDownloading sympy (6MiB)\nDownloaded sympy\n', 'stderr')
       assert.equal(setup.steps.find(step => step.status === 'running')!.phase, 'downloading')
-      assert.equal(setup.steps.find(step => step.status === 'running')!.activity, '下载中：torch (100MiB)')
+      assert.equal(setup.steps.find(step => step.status === 'running')!.activity, 'Đang tải: torch (100MiB)')
       installed = true; request.onOutput('Downloaded torch\nResolved 3 packages\nInstalled 3 packages\n', 'stderr')
     }
     if (args[1] === 'backend.workers.setup_probe') return { stdout: JSON.stringify({ missing: installed ? [] : ['pydantic'] }), stderr: '' }
@@ -267,8 +267,8 @@ test('uv bootstrap and dependency installation expose live output and select the
   assert.equal(uv.env.UV_CACHE_DIR, join(root, 'runtime', 'uv-cache'))
   assert.deepEqual(indexes.slice(0, 2), ['https://pypi.org/simple/uv/', 'https://mirrors.aliyun.com/pypi/simple/uv/'])
   assert.match(step.log!, /Installed 3 packages/)
-  assert.match(step.log!, /完成：基础运行依赖/)
-  assert.match(setup.steps[0]!.log!, /完成：Python 3.12/)
+  assert.match(step.log!, /Hoàn tất: Phụ thuộc chạy cơ bản/)
+  assert.match(setup.steps[0]!.log!, /Hoàn tất: Python 3.12/)
 })
 
 for (const failure of ['probe', 'download', 'resolver']) test(`Torch ${failure} keeps official-first selection and visible failures`, async t => {

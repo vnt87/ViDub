@@ -11,13 +11,13 @@ export type SetupStage = 'pending' | 'running' | 'ready' | 'failed'
 export interface EnvironmentStep { id: string; name: string; status: SetupStage; detail?: string; source?: string; phase?: 'downloading' | 'installing' | 'verifying'; progress?: { received: number; total: number; speed?: number }; activity?: string; log?: string; startedAt?: number; updatedAt?: number }
 export interface EnvironmentConfig { root: string; repoRoot: string; python: string }
 export function assertSupportedPlatform(platform = process.platform, arch = process.arch) {
-  if (!Object.hasOwn(runtimeManifest.python, `${platform}-${arch}`)) throw new Error(`暂不支持 ${platform} / ${arch}，支持 macOS、Linux 的 arm64/x64 和 Windows x64。`)
+  if (!Object.hasOwn(runtimeManifest.python, `${platform}-${arch}`)) throw new Error(`Chưa hỗ trợ ${platform} / ${arch}, hỗ trợ macOS, Linux (arm64/x64) và Windows x64.`)
 }
 
 export class EnvironmentSetup {
   steps: EnvironmentStep[] = [
     { id: 'python', name: 'Python 3.12', status: 'pending' },
-    { id: 'dependencies', name: '基础运行依赖', status: 'pending' },
+    { id: 'dependencies', name: 'Phụ thuộc chạy cơ bản', status: 'pending' },
   ]
   private accelerationPlan?: { backend: string; detail: string; version: string; codec: string; variant: string; findLinks: string; installed: boolean; packages: string[]; prerequisites: string[] }
   private uvReady = false
@@ -32,16 +32,16 @@ export class EnvironmentSetup {
   }
   private source(id: string, source: string) {
     this.steps.find(step => step.id === id)!.source = source
-    this.ctx.logger.info(`${id} 下载源：${source}`)
+    this.ctx.logger.info(`${id} Nguồn tải: ${source}`)
   }
   private line(step: EnvironmentStep, line: string) {
     const text = line.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '').trim()
     if (!text || /^DEBUG Skipping file for /.test(text)) return
     step.updatedAt = Date.now()
-    const log = (step.log || '').replace(/^\[较早日志已省略\]\n/, '') + `${new Date().toISOString()} ${text}\n`
-    step.log = log.length > 64 * 1024 ? '[较早日志已省略]\n' + log.slice(-64 * 1024) : log
+    const log = (step.log || '').replace(/^\[Đã lược bỏ nhật ký cũ\]\n/, '') + `${new Date().toISOString()} ${text}\n`
+    step.log = log.length > 64 * 1024 ? '[Đã lược bỏ nhật ký cũ]\n' + log.slice(-64 * 1024) : log
     const resolving = text.match(/^DEBUG (?:Searching for a compatible version of|Selecting:)\s+(.+)/)
-    if (resolving) step.activity = `解析依赖：${resolving[1]}`.slice(0, 300)
+    if (resolving) step.activity = `Đang phân tích phụ thuộc: ${resolving[1]}`.slice(0, 300)
     else if (!/^(?:Progress \d+ of \d+|DEBUG |TRACE )/.test(text)) step.activity = text.slice(0, 300)
   }
   private async download(id: string, asset: DownloadFile, path: string) {
@@ -59,9 +59,9 @@ export class EnvironmentSetup {
       }
     }, event => {
       step.source = sourceName(event.url)
-      this.line(step, event.status === 'failed' ? event.error! : `${event.status === 'checking' ? '测试下载源' : '下载'}：${step.source} · ${asset.path}`)
+      this.line(step, event.status === 'failed' ? event.error! : `${event.status === 'checking' ? 'Đang kiểm tra nguồn tải' : 'Tải'}: ${step.source} · ${asset.path}`)
     })
-    this.line(step, `下载及校验完成：${asset.path}`)
+    this.line(step, `Đã tải và xác minh xong: ${asset.path}`)
     step.phase = 'verifying'; delete step.progress
   }
   private async installer(args: string[], source: string) {
@@ -87,7 +87,7 @@ export class EnvironmentSetup {
         const downloaded = line.trim().match(/^Downloaded (\S+)/)
         if (downloading) downloads.set(downloading[1]!, downloading[1]! + downloading[2])
         if (downloaded) downloads.delete(downloaded[1]!)
-        if (downloads.size) { step.phase = 'downloading'; step.activity = `下载中：${[...downloads.values()].slice(0, 2).join('、')}${downloads.size > 2 ? `（共 ${downloads.size} 个包）` : ''}` }
+        if (downloads.size) { step.phase = 'downloading'; step.activity = `Đang tải: ${[...downloads.values()].slice(0, 2).join(', ')}${downloads.size > 2 ? ` (tổng ${downloads.size} gói)` : ''}` }
       }
     }
     try { return await this.run(this.config.python, args, {
@@ -103,7 +103,7 @@ export class EnvironmentSetup {
     }) } finally { for (const buffer of Object.values(buffers)) if (buffer) consume(buffer) }
   }
   private async checkSource(url: string) {
-    this.line(this.steps.find(step => step.status === 'running')!, `测试软件源：${url}`)
+    this.line(this.steps.find(step => step.status === 'running')!, `Đang kiểm tra nguồn phần mềm: ${url}`)
     const response = await fetch(url, { signal: AbortSignal.any([this.signal, AbortSignal.timeout(3000)]), headers: { Range: 'bytes=0-0' } })
     await response.body?.cancel()
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`)
@@ -120,15 +120,15 @@ export class EnvironmentSetup {
         if (wheels.length) await this.checkSource(wheels[1]! + (official ? 'torch/' : ''))
       } catch (cause) {
         this.signal.throwIfAborted()
-        const error = new Error(`软件源测试失败：${url} · ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+        const error = new Error(`Kiểm tra nguồn phần mềm thất bại: ${url} · ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
         failures.push(error); this.line(step, error.message); continue
       }
-      this.line(step, `使用软件源：${index}${wheels.length ? ` · ${wheels[1]}` : ''}`)
+      this.line(step, `Đang dùng nguồn phần mềm: ${index}${wheels.length ? ` · ${wheels[1]}` : ''}`)
       try { return await install(index, wheels) } catch (error) {
         this.signal.throwIfAborted()
         const detail = error instanceof Error ? error.message : String(error)
         if (!/failed to (?:download|fetch|connect)|error sending request|timed? out|timeout|connection|network|TLS|HTTP (?:status|403|404|429|5\d\d)/i.test(detail)) throw error
-        this.line(step, `软件源下载失败：${index}\n${detail}`)
+        this.line(step, `Tải từ nguồn phần mềm thất bại: ${index}\n${detail}`)
         failures.push(error instanceof Error ? error : new Error(detail)); continue
       }
     }
@@ -151,7 +151,7 @@ export class EnvironmentSetup {
     const environment = dirname(dirname(this.config.python))
     if (!await fileSize(this.config.python)) {
       const managed = join(this.config.root, 'runtime', 'venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
-      if (this.config.python !== managed) throw new Error(`配置的 Python 不存在：${this.config.python}`)
+      if (this.config.python !== managed) throw new Error(`Python đã cấu hình không tồn tại: ${this.config.python}`)
       const windows = process.platform === 'win32'
       const asset = runtimeManifest.python[`${process.platform}-${process.arch}` as keyof typeof runtimeManifest.python]
       const folder = join(this.config.root, 'runtime', 'python')
@@ -170,12 +170,12 @@ export class EnvironmentSetup {
     const plan = this.accelerationPlan = await this.probe('acceleration-plan')
     this.steps.find(step => step.id === 'acceleration')!.detail = plan.detail
     if (!plan.installed) {
-      this.source('acceleration', plan.packages.length ? 'AMD 官方 / PyPI' : 'PyPI / PyTorch')
+      this.source('acceleration', plan.packages.length ? 'AMD chính thức / PyPI' : 'PyPI / PyTorch')
       if (plan.prerequisites.length) await this.pip(plan.prerequisites)
       await this.pip(plan.packages.length ? plan.packages : [`torch==${plan.version}${plan.variant ? '+' + plan.variant : ''}`, `torchaudio==${plan.version}${plan.variant ? '+' + plan.variant : ''}`], plan.findLinks ? plan.variant : undefined)
     }
     const status = await this.probe('acceleration')
-    return status.backend === plan.backend ? status.detail : `${plan.detail}；${status.detail}`
+    return status.backend === plan.backend ? status.detail : `${plan.detail}; ${status.detail}`
   }
   private async dependencies(groups: DependencyGroup[]) {
     const { missing } = await this.probe('dependencies', groups)
@@ -191,7 +191,7 @@ export class EnvironmentSetup {
       this.source('dependencies', 'PyPI')
       await this.pip([...options, ...groups.flatMap(group => ['-r', join(this.config.repoRoot, 'backend', 'requirements', `${group}.txt`)])])
       const remaining = (await this.probe('dependencies', groups)).missing
-      if (remaining.length) throw new Error(`依赖安装后仍未满足：${remaining.join(', ')}`)
+      if (remaining.length) throw new Error(`Sau khi cài đặt, phụ thuộc vẫn chưa đủ: ${remaining.join(', ')}`)
     }
     if (groups.includes('demucs') && !await fileSize(join(this.config.repoRoot, 'submodule', 'demucs', 'demucs', '__init__.py'))) {
       await this.run('git', ['submodule', 'update', '--init', '--recursive', 'submodule/demucs'])
@@ -211,7 +211,7 @@ export class EnvironmentSetup {
         const subtitles = name !== 'ffmpeg' || /\bsubtitles\b/.test(result.stdout)
         const shared = !windows || (await readdir(dirname(managed))).some(file => /^av.*\.dll$/i.test(file))
         if (subtitles && shared) { paths[envKey] = managed; continue }
-        this.ctx.logger.info(`${managed} 缺少所需能力，安装应用专用 FFmpeg。`)
+        this.ctx.logger.info(`${managed} thiếu năng lực cần thiết, cài FFmpeg riêng của ứng dụng.`)
       }
       await mkdir(directory, { recursive: true })
       this.source('ffmpeg', 'GitHub')
@@ -239,7 +239,7 @@ export class EnvironmentSetup {
         await chmod(managed, 0o700)
       }
       const result = await this.run(managed, name === 'ffmpeg' ? ['-hide_banner', '-filters'] : ['-version'])
-      if (name === 'ffmpeg' && !/\bsubtitles\b/.test(result.stdout)) throw new Error(`下载的 FFmpeg 缺少 subtitles：${managed}`)
+      if (name === 'ffmpeg' && !/\bsubtitles\b/.test(result.stdout)) throw new Error(`FFmpeg đã tải thiếu bộ lọc subtitles: ${managed}`)
       paths[envKey] = managed
     }
     Object.assign(process.env, paths)
@@ -250,14 +250,14 @@ export class EnvironmentSetup {
     const data = join(this.config.root, 'nltk_data')
     process.env.NLTK_DATA = data
     if (!(await this.probe('punkt')).ready) {
-      this.source('resources', 'NLTK 官方')
+      this.source('resources', 'NLTK chính thức')
       const asset = runtimeManifest.punkt
       const folder = join(data, 'tokenizers')
       const archive = join(folder, asset.path)
       await this.download('resources', asset, archive)
       await this.python(['-m', 'zipfile', '-e', archive, folder])
     }
-    if (!(await this.probe('punkt')).ready) throw new Error('Whisper 英文分句资源安装后未通过检查。')
+    if (!(await this.probe('punkt')).ready) throw new Error('Tài nguyên tách câu tiếng Anh của Whisper không vượt qua kiểm tra sau khi cài đặt.')
   }
   private async restoreManagedPaths() {
     const windows = process.platform === 'win32'
@@ -280,18 +280,18 @@ export class EnvironmentSetup {
     groups = [...new Set<DependencyGroup>(['base', ...groups])]
     const actions: Array<{ id: string; name: string; run: () => Promise<string | void> }> = [
       { id: 'python', name: 'Python 3.12', run: () => this.pythonEnvironment() },
-      ...(groups.some(group => acceleratedGroups.includes(group)) ? [{ id: 'acceleration', name: 'GPU 与推理后端', run: () => this.acceleration() }] : []),
-      { id: 'dependencies', name: groups.length === 1 ? '基础运行依赖' : '运行依赖', run: () => this.dependencies(groups) },
+      ...(groups.some(group => acceleratedGroups.includes(group)) ? [{ id: 'acceleration', name: 'GPU và backend suy luận', run: () => this.acceleration() }] : []),
+      { id: 'dependencies', name: groups.length === 1 ? 'Phụ thuộc chạy cơ bản' : 'Phụ thuộc chạy', run: () => this.dependencies(groups) },
       ...(groups.includes('media') ? [{ id: 'ffmpeg', name: 'FFmpeg', run: () => this.media() }] : []),
-      ...(groups.includes('punkt') ? [{ id: 'resources', name: '分句资源', run: () => this.resources() }] : []),
+      ...(groups.includes('punkt') ? [{ id: 'resources', name: 'Tài nguyên tách câu', run: () => this.resources() }] : []),
     ]
     this.steps = actions.map(({ id, name }) => ({ id, name, status: 'pending' }))
     for (const [index, action] of actions.entries()) {
       this.signal.throwIfAborted()
       const step = this.steps[index]!
       step.status = 'running'; step.phase = 'installing'; step.startedAt = Date.now(); delete step.detail
-      this.line(step, `开始：${step.name}`)
-      try { const detail = await action.run(); if (detail) step.detail = detail; this.line(step, `完成：${step.name}${detail ? ` · ${detail}` : ''}`); step.status = 'ready'; delete step.phase; delete step.progress }
+      this.line(step, `Bắt đầu: ${step.name}`)
+      try { const detail = await action.run(); if (detail) step.detail = detail; this.line(step, `Hoàn tất: ${step.name}${detail ? ` · ${detail}` : ''}`); step.status = 'ready'; delete step.phase; delete step.progress }
       catch (error) { step.status = 'failed'; step.detail = error instanceof Error ? error.message : String(error); this.line(step, step.detail); throw error }
     }
   }

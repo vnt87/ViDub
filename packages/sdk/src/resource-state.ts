@@ -24,7 +24,7 @@ export interface ResourceFacts {
   status?: string; environment?: ResourceStep[]; models?: ResourceModel[]; requirements?: ResourceNeed[]
   error?: string; entries?: ResourceEntry[]
 }
-const names: Record<string, string> = { python: 'Python', acceleration: '推理运行库', ffmpeg: 'FFmpeg', resources: '分句资源' }
+const names: Record<string, string> = { python: 'Python', acceleration: 'Thư viện suy luận', ffmpeg: 'FFmpeg', resources: 'Tài nguyên tách câu' }
 
 export function resourceEntries(facts: ResourceFacts): ResourceEntry[] {
   const steps = facts.environment ?? [], models = facts.models ?? []

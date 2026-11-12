@@ -6,7 +6,7 @@
 
 An open-source video localization workspace: import a video, transcribe and translate its speech, clone each sentence from its source audio, and produce subtitles and dubbed video.
 
-[中文](README.md) · [Website and demos](https://liuzhao1225.github.io/YouDub-webui/) · [Download latest](https://github.com/liuzhao1225/YouDub-webui/releases/latest) · [Installation and upgrade](docs/upgrade.md) · [Community](#community)
+[Tiếng Việt](README.md) · [Website and demos](https://liuzhao1225.github.io/YouDub-webui/) · [Download latest](https://github.com/liuzhao1225/YouDub-webui/releases/latest) · [Installation and upgrade](docs/upgrade.md) · [Community](#community)
 
 ## Demo
 

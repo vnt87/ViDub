@@ -9,7 +9,7 @@ afterEach(() => { cleanup(); window.localStorage.clear() })
 it('changes language before installation and submits the native folder choice', async () => {
   const configure = vi.fn(async () => {}), pickDirectory = vi.fn(async () => '/Volumes/Media/YouDub')
   render(<LanguageProvider><SetupInstallation path="/default/YouDub" busy={false} configure={configure} pickDirectory={pickDirectory} /></LanguageProvider>)
-  fireEvent.click(screen.getByLabelText('界面语言'))
+  fireEvent.click(screen.getByLabelText('Ngôn ngữ'))
   fireEvent.click(screen.getByRole('menuitem', { name: '日本語' }))
   await waitFor(() => expect(screen.getByText('インストール設定')).toBeTruthy())
   expect(configure).not.toHaveBeenCalled()
@@ -24,8 +24,8 @@ it('changes language before installation and submits the native folder choice', 
 
 it('retains the directory and restores focus when the native picker is cancelled', async () => {
   render(<LanguageProvider><SetupInstallation path="/default/YouDub" busy={false} configure={vi.fn()} pickDirectory={async () => null} /></LanguageProvider>)
-  const choose = screen.getByRole('button', { name: '选择文件夹' })
+  const choose = screen.getByRole('button', { name: 'Chọn thư mục' })
   fireEvent.click(choose)
   await waitFor(() => expect(choose).toHaveFocus())
-  expect(screen.getByLabelText('安装目录')).toHaveValue('/default/YouDub')
+  expect(screen.getByLabelText('Thư mục cài đặt')).toHaveValue('/default/YouDub')
 })

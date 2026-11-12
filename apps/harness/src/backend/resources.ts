@@ -12,8 +12,8 @@ import { readJson } from './transport.mjs'
 import { mergeResourceEntries, resourceEntries, type ResourceEntry, type ResourceNeed } from '../../../../packages/sdk/src/resource-state.ts'
 const runtimeSelections: Record<string, { providerId: string; groups: DependencyGroup[]; name: string }> = {
   python: { providerId: '$runtime.python', groups: ['base'], name: 'Python' },
-  acceleration: { providerId: '$runtime.acceleration', groups: ['acceleration'], name: '推理运行库' },
-  resources: { providerId: '$runtime.punkt', groups: ['punkt'], name: '分句资源' },
+  acceleration: { providerId: '$runtime.acceleration', groups: ['acceleration'], name: 'Thư viện suy luận' },
+  resources: { providerId: '$runtime.punkt', groups: ['punkt'], name: 'Tài nguyên tách câu' },
 }
 const runtimeResource = (id: string) => Object.entries(runtimeSelections).find(([, item]) => item.providerId === id)
 type ModelStatus = 'pending' | 'downloading' | 'paused' | 'ready' | 'failed'
@@ -73,7 +73,7 @@ export default class Resources extends Service {
     const dependencies = await this.environment.probe('dependencies', ['base'])
     this.environment.steps = [
       { id: 'python', name: 'Python', status: 'ready', detail: python.stdout.trim() },
-      { id: 'dependencies', name: '基础运行依赖', status: dependencies.missing.length ? 'failed' : 'ready', ...(dependencies.missing.length ? { detail: dependencies.missing.join(', ') } : {}) },
+      { id: 'dependencies', name: 'Phụ thuộc chạy cơ bản', status: dependencies.missing.length ? 'failed' : 'ready', ...(dependencies.missing.length ? { detail: dependencies.missing.join(', ') } : {}) },
     ]
   }
   private runJob(label: string, controller: AbortController, execute: () => Promise<void>) {
@@ -95,7 +95,7 @@ export default class Resources extends Service {
       const provider = providers.find(item => item.id === selection.providerId)
       if (!provider) throw new AppError('PROVIDER_UNAVAILABLE', `Provider ${selection.providerId} is not registered.`, 422)
       if (selection.model && selection.model !== providerResources(provider)?.model?.id && !provider.models?.some(model => model.id === selection.model)) {
-        throw new AppError('MODEL_UNAVAILABLE', `所选模型不可用：${selection.model}`, 422)
+        throw new AppError('MODEL_UNAVAILABLE', `Mô hình đã chọn không khả dụng: ${selection.model}`, 422)
       }
     }
     return selections
@@ -105,13 +105,13 @@ export default class Resources extends Service {
     return { ...current, entries: resourceEntries(current) }
   }
   async resourceTargets(ids: unknown) {
-    if (!Array.isArray(ids) || !ids.length || ids.some(id => typeof id !== 'string')) throw new AppError('INVALID_INPUT', '请选择有效资源。', 422)
+    if (!Array.isArray(ids) || !ids.length || ids.some(id => typeof id !== 'string')) throw new AppError('INVALID_INPUT', 'Hãy chọn tài nguyên hợp lệ.', 422)
     const inventory = await this.resourceInventory()
     return this.catalogSelections(ids.map(id => {
       const runtime = runtimeSelections[id]
       if (runtime) return { providerId: runtime.providerId }
       const item = inventory.items.find(item => (item.downloadId || (item.model ? `${item.providerId}:${item.model}` : item.providerId === 'youdub.media' ? 'ffmpeg' : item.providerId)) === id)
-      if (!item) throw new AppError('INVALID_INPUT', `未知资源：${id}`, 422)
+      if (!item) throw new AppError('INVALID_INPUT', `Tài nguyên không xác định: ${id}`, 422)
       return { providerId: item.providerId, ...(item.model ? { model: item.model } : {}) }
     }))
   }
@@ -134,8 +134,8 @@ export default class Resources extends Service {
   }
   async resourceAction(action: string, id?: string) {
     if (!['pause', 'resume', 'retry'].includes(action) || (id !== undefined && typeof id !== 'string')) throw new AppError('INVALID_INPUT', 'Invalid resource action or model.', 422)
-    if (!this.resourceState) throw new AppError('ENVIRONMENT_NOT_READY', '当前没有正在准备的运行依赖。', 409)
-    if (id !== undefined && !this.resourceState.models.some(model => model.id === id)) throw new AppError('INVALID_INPUT', '该模型不属于当前准备任务。', 422)
+    if (!this.resourceState) throw new AppError('ENVIRONMENT_NOT_READY', 'Hiện không có phụ thuộc chạy nào đang được chuẩn bị.', 409)
+    if (id !== undefined && !this.resourceState.models.some(model => model.id === id)) throw new AppError('INVALID_INPUT', 'Mô hình này không thuộc tác vụ chuẩn bị hiện tại.', 422)
     const targets = this.resourceState.models.filter(model => (!id || model.id === id) && model.status !== 'ready')
     if (action === 'pause') {
       for (const model of targets) {
@@ -152,7 +152,7 @@ export default class Resources extends Service {
   }
   private selections(value: ResourceSelection[]) {
     if (!Array.isArray(value) || value.some(item => !item || typeof item.providerId !== 'string' || !item.providerId || Object.keys(item).some(key => !['providerId', 'model'].includes(key)) || (item.model !== undefined && typeof item.model !== 'string'))) {
-      throw new AppError('INVALID_INPUT', '工作流依赖必须包含有效的 providerId 和 model。', 422)
+      throw new AppError('INVALID_INPUT', 'Phụ thuộc quy trình phải có providerId và model hợp lệ.', 422)
     }
     return [...new Map(value.map(({ providerId, model }) => [JSON.stringify([providerId, model]), { providerId, ...(model ? { model } : {}) }])).values()]
       .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
@@ -192,7 +192,7 @@ export default class Resources extends Service {
         for (const name of result.missing) missingPackages.add(name)
         if (!result.punkt) punktReady = false
         requirements.push({ ...selection, resourceId, name: definition.name, dependencies: resourceId === 'python' ? [] : ['python'], ready: !result.missing.length && result.punkt, automatic: true, missingPackages: result.missing,
-          ...((result.missing.length || !result.punkt) ? { reason: result.missing.length ? `缺少运行依赖：${result.missing.join(', ')}` : '缺少分句资源。' } : {}) })
+          ...((result.missing.length || !result.punkt) ? { reason: result.missing.length ? `Thiếu phụ thuộc chạy: ${result.missing.join(', ')}` : 'Thiếu tài nguyên tách câu.' } : {}) })
         continue
       }
       const provider = this.catalog.listProviders().find(item => item.id === selection.providerId)
@@ -201,34 +201,34 @@ export default class Resources extends Service {
       if (!groups) {
         const ready = provider?.available === true && (!selection.model || provider.models?.some(model => model.id === selection.model) === true)
         requirements.push({ ...selection, remote: provider?.execution === 'remote', resourceId: selection.model ? `${selection.providerId}:${selection.model}` : selection.providerId, name: typeof provider?.label === 'string' ? provider.label : selection.providerId, ready, automatic: false, missingPackages: [],
-          ...(!ready ? { reason: provider?.unavailableReason || '请根据该插件的要求准备运行依赖。' } : {}) })
+          ...(!ready ? { reason: provider?.unavailableReason || 'Hãy chuẩn bị phụ thuộc chạy theo yêu cầu của plugin này.' } : {}) })
         continue
       }
       const result = await inspect(groups)
       for (const name of result.missing) missingPackages.add(name)
       if (!result.media) { mediaReady = false; mediaReason = result.mediaReason }
       if (!result.punkt) punktReady = false
-      let reason = result.missing.length ? `缺少运行依赖：${result.missing.join(', ')}` :
-        !result.media ? result.mediaReason || '缺少 FFmpeg 或 FFprobe。' : !result.punkt ? '缺少 Whisper 分句资源。' :
-          !result.demucsSource ? '缺少 Demucs 子模块源码。' : undefined
+      let reason = result.missing.length ? `Thiếu phụ thuộc chạy: ${result.missing.join(', ')}` :
+        !result.media ? result.mediaReason || 'Thiếu FFmpeg hoặc FFprobe.' : !result.punkt ? 'Thiếu tài nguyên tách câu của Whisper.' :
+          !result.demucsSource ? 'Thiếu mã nguồn module con Demucs.' : undefined
       const modelId = resources?.model?.downloadId
       let automatic = !modelId || !selection.model || selection.model === resources?.model?.id
       let configurationRequired = false
       if (!reason && provider?.execution === 'remote') {
         const model = provider.models?.find(model => model.id === selection.model)
-        if (!provider.available) reason = provider.unavailableReason || '远端服务尚未配置。'
-        else if (!selection.model) reason = '请在工作流节点中选择翻译模型。'
-        else if (!model || model.available === false) reason = model?.unavailableReason || `所选模型不可用：${selection.model}`
+        if (!provider.available) reason = provider.unavailableReason || 'Dịch vụ từ xa chưa được cấu hình.'
+        else if (!selection.model) reason = 'Hãy chọn mô hình dịch trong nút quy trình.'
+        else if (!model || model.available === false) reason = model?.unavailableReason || `Mô hình đã chọn không khả dụng: ${selection.model}`
         if (reason) { automatic = false; configurationRequired = true }
       }
       if (modelId && automatic) requiredModels.add(modelId)
       if (!reason && modelId) {
         const selectedModel = selection.model || resources?.model?.id
         if (!provider?.models?.some(model => model.id === selectedModel)) {
-          reason = provider?.unavailableReason || `未安装模型：${selectedModel}`
+          reason = provider?.unavailableReason || `Chưa cài mô hình: ${selectedModel}`
         }
       }
-      if (!reason && provider?.available !== true) reason = provider?.unavailableReason || '运行服务尚未就绪。'
+      if (!reason && provider?.available !== true) reason = provider?.unavailableReason || 'Dịch vụ chạy chưa sẵn sàng.'
       requirements.push({ ...selection, remote: provider?.execution === 'remote', resourceId: modelId && automatic ? modelId : selection.model ? `${selection.providerId}:${selection.model}` : selection.providerId === 'youdub.media' ? 'ffmpeg' : selection.providerId, name: modelId ? modelManifest.find(model => model.id === modelId)!.name : typeof provider?.label === 'string' ? provider.label : selection.providerId, downloadId: automatic ? modelId : undefined,
         dependencies: ['python', ...(groups.some(group => acceleratedGroups.includes(group)) ? ['acceleration'] : []), ...(groups.includes('media') && selection.providerId !== 'youdub.media' ? ['ffmpeg'] : []), ...(groups.includes('punkt') ? ['resources'] : [])], ready: !reason, automatic, missingPackages: result.missing, ...(reason ? { reason } : {}), ...(configurationRequired ? { configurationRequired } : {}) })
     }
@@ -238,7 +238,7 @@ export default class Resources extends Service {
       if (model.status !== 'ready') for (const requirement of requirements) {
         if (requirement.automatic && this.catalog.listProviders().some(provider => provider.id === requirement.providerId && providerResources(provider)?.model?.downloadId === model.id)) {
           requirement.ready = false
-          requirement.reason ??= `${model.name} 模型文件未安装或不完整。`
+          requirement.reason ??= `Tệp mô hình ${model.name} chưa được cài hoặc không đầy đủ.`
         }
       }
     }
@@ -249,15 +249,15 @@ export default class Resources extends Service {
       if (plan.installed) {
         const actual = await this.resourceEnvironment.probe('acceleration')
         const failed = actual.devices?.some((device: { available: boolean }) => !device.available)
-        environment.push({ id: 'acceleration', name: 'GPU 与推理后端', status: failed ? 'failed' : actual.backend ? 'ready' : 'pending', detail: actual.detail || '尚未取得推理后端检测结果。' })
-      } else environment.push({ id: 'acceleration', name: 'GPU 与推理后端', status: 'pending', detail: plan.detail })
+        environment.push({ id: 'acceleration', name: 'GPU và backend suy luận', status: failed ? 'failed' : actual.backend ? 'ready' : 'pending', detail: actual.detail || 'Chưa có kết quả kiểm tra backend suy luận.' })
+      } else environment.push({ id: 'acceleration', name: 'GPU và backend suy luận', status: 'pending', detail: plan.detail })
     }
-    environment.push({ id: 'dependencies', name: groups.length > 1 ? '运行依赖' : '基础运行依赖', status: missingPackages.size ? 'pending' : 'ready', ...(missingPackages.size ? { detail: `缺少：${[...missingPackages].join(', ')}` } : {}) })
+    environment.push({ id: 'dependencies', name: groups.length > 1 ? 'Phụ thuộc chạy' : 'Phụ thuộc chạy cơ bản', status: missingPackages.size ? 'pending' : 'ready', ...(missingPackages.size ? { detail: `Thiếu: ${[...missingPackages].join(', ')}` } : {}) })
     if (groups.includes('media')) environment.push({ id: 'ffmpeg', name: 'FFmpeg', status: mediaReady ? 'ready' : 'pending', ...(mediaReason ? { detail: mediaReason } : {}) })
-    if (groups.includes('punkt')) environment.push({ id: 'resources', name: '分句资源', status: punktReady ? 'ready' : 'pending' })
+    if (groups.includes('punkt')) environment.push({ id: 'resources', name: 'Tài nguyên tách câu', status: punktReady ? 'ready' : 'pending' })
     for (const requirement of requirements) {
       const dependency = environment.find(step => (step.id === requirement.resourceId || requirement.dependencies?.includes(step.id)) && step.status !== 'ready')
-      if (dependency) { requirement.ready = false; requirement.reason ??= dependency.detail || `${dependency.name} 尚未就绪。` }
+      if (dependency) { requirement.ready = false; requirement.reason ??= dependency.detail || `${dependency.name} chưa sẵn sàng.` }
     }
     return this.snapshot({ status: !missingPackages.size && requirements.every(item => item.ready) ? 'ready' : 'missing', selections, requirements, models, environment })
   }
@@ -292,7 +292,7 @@ export default class Resources extends Service {
     return inspected
   }
   async prepareResources(value: ResourceSelection[]) {
-    if (this.resourceRequest) throw new AppError('RESOURCE_PREPARATION_BUSY', '工作流依赖检查正在进行。', 409)
+    if (this.resourceRequest) throw new AppError('RESOURCE_PREPARATION_BUSY', 'Đang kiểm tra phụ thuộc quy trình.', 409)
     this.resourceRequest = this.startResourcePreparation(value)
     try { return await this.resourceRequest }
     finally { this.resourceRequest = undefined }
@@ -300,7 +300,7 @@ export default class Resources extends Service {
   private async startResourcePreparation(value: ResourceSelection[]) {
     const selections = this.selections(value)
     if (this.resourceJob) {
-      if (JSON.stringify(this.resourceState!.selections) !== JSON.stringify(selections)) throw new AppError('RESOURCE_PREPARATION_BUSY', '其他工作流依赖正在准备。', 409)
+      if (JSON.stringify(this.resourceState!.selections) !== JSON.stringify(selections)) throw new AppError('RESOURCE_PREPARATION_BUSY', 'Phụ thuộc quy trình khác đang được chuẩn bị.', 409)
       return this.checkResources(selections)
     }
     const initial = await this.inspectResources(selections)
@@ -310,7 +310,7 @@ export default class Resources extends Service {
     this.resourceState = { ...initial, status: 'preparing' }
     const controller = new AbortController()
     this.resourceEnvironment = new EnvironmentSetup(this.ctx, this.config, this.client, AbortSignal.any([this.stopping.signal, controller.signal]))
-    this.resourceJob = this.runJob('准备工作流资源', controller, async () => {
+    this.resourceJob = this.runJob('Chuẩn bị tài nguyên quy trình', controller, async () => {
       await this.resourceEnvironment.prepare(this.groups(selections))
       for (const model of this.resourceState!.models) if (!['ready', 'paused'].includes(model.status)) this.download(model.id)
       while (this.jobs.size) await Promise.all([...this.jobs.values()].map(job => job.promise))
@@ -343,11 +343,11 @@ export default class Resources extends Service {
     model.status = 'downloading'; model.error = undefined; model.source = undefined; model.log = ''
     const log = (text: string) => {
       const line = `${new Date().toISOString()} ${text}\n`
-      const output = (model.log || '').replace(/^\[较早日志已省略\]\n/, '') + line
-      model.log = output.length > 64 * 1024 ? '[较早日志已省略]\n' + output.slice(-64 * 1024) : output
+      const output = (model.log || '').replace(/^\[Đã lược bỏ nhật ký cũ\]\n/, '') + line
+      model.log = output.length > 64 * 1024 ? '[Đã lược bỏ nhật ký cũ]\n' + output.slice(-64 * 1024) : output
       this.ctx.logger.info(line.trim())
     }
-    const promise = this.runJob(`下载 ${model.name}`, controller, async () => {
+    const promise = this.runJob(`Tải ${model.name}`, controller, async () => {
       let completed = 0, previousBytes = 0, previousTime = Date.now()
       for (const file of definition.files) {
         let firstProgress = true, loggedAt = 0
@@ -362,9 +362,9 @@ export default class Resources extends Service {
           }
         }, event => {
           model.source = sourceName(event.url)
-          log(event.status === 'failed' ? event.error! : `${event.status === 'checking' ? '测试下载源' : '下载'}：${model.source} · ${file.path}`)
+          log(event.status === 'failed' ? event.error! : `${event.status === 'checking' ? 'Đang kiểm tra nguồn tải' : 'Tải'}: ${model.source} · ${file.path}`)
         })
-        log(`下载及校验完成：${file.path}`)
+        log(`Đã tải và xác minh xong: ${file.path}`)
         completed += file.size
         previousBytes = completed; previousTime = Date.now()
       }
@@ -383,7 +383,7 @@ export function registerResourceRoutes(ctx: any, http: any) {
   for (const action of ['check', 'prepare'] as const) {
     route('POST', `/api/v2/resources/${action}`, async request => {
       const { selections, resourceIds } = await readJson(request)
-      if (selections && resourceIds) throw new AppError('INVALID_INPUT', '资源选择不能同时包含 selections 和 resourceIds。', 422)
+      if (selections && resourceIds) throw new AppError('INVALID_INPUT', 'Lựa chọn tài nguyên không được chứa đồng thời selections và resourceIds.', 422)
       const selected = resourceIds ? await ctx.youdubResources.resourceTargets(resourceIds) : ctx.youdubResources.catalogSelections(selections)
       http.json(request, 200, await ctx.youdubResources[action === 'check' ? 'checkResources' : 'prepareResources'](selected))
     })
@@ -391,7 +391,7 @@ export function registerResourceRoutes(ctx: any, http: any) {
       const { document: raw } = await readJson(request)
       const document = parseWorkflowDocument(raw), types = nodeTypes(ctx.catalog)
       const selections = document.nodes.map(node => {
-        if (!types.some(type => type.type === node.type && type.version === node.typeVersion && type.providerId === node.provider.id)) throw new AppError('NODE_TYPE_UNAVAILABLE', `节点 ${node.id} 的类型、版本或供应商不可用。`, 422)
+        if (!types.some(type => type.type === node.type && type.version === node.typeVersion && type.providerId === node.provider.id)) throw new AppError('NODE_TYPE_UNAVAILABLE', `Loại, phiên bản hoặc nhà cung cấp của nút ${node.id} không khả dụng.`, 422)
         return { providerId: node.provider.id, model: node.provider.model }
       })
       http.json(request, 200, await ctx.youdubResources[action === 'check' ? 'checkResources' : 'prepareResources'](selections))

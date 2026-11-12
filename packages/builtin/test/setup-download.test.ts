@@ -41,7 +41,7 @@ test('resumes an existing partial file, verifies hash, and reuses the verified r
 test('checksum failures remain errors, never publish the final model, and do not retry', async t => {
   let requests = 0
   const { client, file, target } = await fixture(t, (_request, response) => { requests++; response.end(Buffer.alloc(data.length, 1)) })
-  await assert.rejects(client.download(file, target, new AbortController().signal, () => {}), /下载校验失败/)
+  await assert.rejects(client.download(file, target, new AbortController().signal, () => {}), /Xác minh tải xuống thất bại/)
   assert.equal(await fileSize(target), 0)
   assert.equal(await fileSize(target + '.part'), data.length)
   assert.equal(requests, 2)
@@ -59,7 +59,7 @@ test('setup downloads connect directly despite an unusable environment proxy', a
 test('a server ignoring Range fails without truncating the saved partial download', async t => {
   const { client, file, target } = await fixture(t, (_request, response) => response.end(data))
   await writeFile(target + '.part', data.subarray(0, 7))
-  await assert.rejects(client.download(file, target, new AbortController().signal, () => {}), /未接受断点/)
+  await assert.rejects(client.download(file, target, new AbortController().signal, () => {}), /không chấp nhận điểm tiếp tục/)
   assert.equal(await fileSize(target + '.part'), 7)
   assert.equal(await fileSize(target), 0)
 })
@@ -83,7 +83,7 @@ test('pause preserves written bytes and explicitly resumed transfer succeeds', a
 
 test('OS/architecture chooses native installers and rejects unsupported platforms', () => {
   for (const [platform, arch] of [['darwin', 'arm64'], ['darwin', 'x64'], ['linux', 'arm64'], ['linux', 'x64'], ['win32', 'x64']] as const) assert.doesNotThrow(() => assertSupportedPlatform(platform, arch))
-  assert.throws(() => assertSupportedPlatform('win32', 'arm64'), /暂不支持/)
+  assert.throws(() => assertSupportedPlatform('win32', 'arm64'), /Chưa hỗ trợ/)
 })
 
 test('preflight selects the official source without touching an available mirror', async t => {

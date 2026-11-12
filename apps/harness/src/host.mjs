@@ -33,7 +33,7 @@ export const Config = z.object({
   modelsDir: z.string().required(),
   dataDir: z.string().required(),
   installation: z.any().default(null).volatile(),
-  preferences: z.any().default({ ui_language: 'zh', defaults: null, plugins: {}, connections: [] }).volatile(),
+  preferences: z.any().default({ ui_language: 'vi', defaults: null, plugins: {}, connections: [] }).volatile(),
 });
 const domainNames = ['catalog', 'store', 'files', 'tasks', 'settings'];
 

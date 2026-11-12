@@ -4,7 +4,7 @@ import { LanguageProvider as HarnessLanguageProvider } from '../../../harness/sr
 import { languagePacks, translateMessage, type Text } from '../locales'
 function localeSource() {
     const saved = localStorage.getItem('youdub-ui-language')
-    let snapshot = { active: languagePacks.find(pack => pack.id === saved)?.id ?? 'zh', revision: 0 }
+    let snapshot = { active: languagePacks.find(pack => pack.id === saved)?.id ?? 'vi', revision: 0 }
     const listeners = new Set<() => void>()
     return {
       getSnapshot: () => snapshot,

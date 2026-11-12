@@ -24,7 +24,7 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
   const modelItems = inventory => inventory.items.filter(item => item.automatic && modelManifest.some(model => model.id === item.downloadId));
   const allSelections = inventory => {
     const items = modelItems(inventory);
-    if (modelManifest.some(model => !items.some(item => item.downloadId === model.id))) throw new AppError('MODEL_UNAVAILABLE', '首次初始化的四项模型服务未完整注册。', 422);
+    if (modelManifest.some(model => !items.some(item => item.downloadId === model.id))) throw new AppError('MODEL_UNAVAILABLE', 'Bốn dịch vụ mô hình của lần khởi tạo đầu tiên chưa được đăng ký đầy đủ.', 422);
     return domain.resources.catalogSelections([...firstRunBaseResources, ...items.map(selectionOf)]);
   };
   const fullyReady = resources => resources?.status === 'ready' &&
@@ -35,7 +35,7 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
     const selections = domain.resources.catalogSelections(value), required = allSelections(inventory);
     if (modelItems(inventory).some(item => !selections.some(selection => sameSelection(selection, item))) ||
         selections.some(selection => !required.some(item => sameSelection(selection, item)))) {
-      throw new AppError('INVALID_INPUT', '首次初始化需要准备全部四项模型及其运行依赖。', 422);
+      throw new AppError('INVALID_INPUT', 'Lần khởi tạo đầu tiên cần chuẩn bị đủ bốn mô hình và các phụ thuộc chạy của chúng.', 422);
     }
     return required;
   };
@@ -57,7 +57,7 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
     if (resources && !selectionRequired && phase !== 'ready' && phase !== 'failed') {
       if (fullyReady(resources)) await finish();
       else if (resources.status === 'ready') {
-        phase = 'failed'; failure = '首次初始化的四项模型或运行依赖尚未全部就绪。';
+        phase = 'failed'; failure = 'Bốn mô hình hoặc phụ thuộc chạy của lần khởi tạo đầu tiên chưa sẵn sàng đầy đủ.';
       }
       else if (resources.status === 'failed') {
         failure = resources.error;
@@ -84,7 +84,7 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
     controller = new AbortController();
     phase = 'environment'; failure = undefined;
     let execution;
-    ctx.jobs.start({ label: '准备 YouDub 运行环境', run() {
+    ctx.jobs.start({ label: 'Chuẩn bị môi trường chạy YouDub', run() {
       execution = (async () => {
         // The installation page is available before a worker can know its paths.
         // Resolve the declared dependency only after that choice is committed.
@@ -118,16 +118,16 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
   ctx.effect(() => transport.register('POST', '/api/setup', async request => {
     const { action, id, selections, path } = await readJson(request);
     if (action === 'configure') {
-      if (phase !== 'installation' || configuring) throw new AppError('SETUP_BUSY', '安装目录已经确认。', 409);
+      if (phase !== 'installation' || configuring) throw new AppError('SETUP_BUSY', 'Thư mục cài đặt đã được xác nhận.', 409);
       configuring = true;
       try {
         Object.assign(config, await installation.configure(path));
         prepare();
       } finally { configuring = false; }
     } else if (phase === 'installation') {
-      throw new AppError('INSTALLATION_REQUIRED', '请先选择语言和安装目录。', 409);
+      throw new AppError('INSTALLATION_REQUIRED', 'Hãy chọn ngôn ngữ và thư mục cài đặt trước.', 409);
     } else if (action === 'prepare') {
-      if (!domain || !selectionRequired || selecting) throw new AppError('SETUP_BUSY', '当前不能开始模型准备。', 409);
+      if (!domain || !selectionRequired || selecting) throw new AppError('SETUP_BUSY', 'Hiện chưa thể bắt đầu chuẩn bị mô hình.', 409);
       selecting = true;
       try {
         selected = validateSelections(selections, await domain.resources.resourceInventory());
@@ -137,15 +137,15 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
       } catch (error) { failure = error.message; throw error; }
       finally { selecting = false; }
     } else {
-      if (!['pause', 'resume', 'retry'].includes(action) || id !== undefined && !initialModels.some(model => model.id === id)) throw new AppError('INVALID_INPUT', '无效的环境准备操作或模型。', 422);
+      if (!['pause', 'resume', 'retry'].includes(action) || id !== undefined && !initialModels.some(model => model.id === id)) throw new AppError('INVALID_INPUT', 'Thao tác chuẩn bị môi trường hoặc mô hình không hợp lệ.', 422);
       if (domain) {
-        if (phase === 'ready') throw new AppError('SETUP_FINISHED', '首次环境准备已完成。', 409);
-        if (selectionRequired) throw new AppError('MODEL_SELECTION_REQUIRED', '请先开始准备全部模型。', 409);
+        if (phase === 'ready') throw new AppError('SETUP_FINISHED', 'Chuẩn bị môi trường lần đầu đã hoàn tất.', 409);
+        if (selectionRequired) throw new AppError('MODEL_SELECTION_REQUIRED', 'Hãy bắt đầu chuẩn bị tất cả mô hình trước.', 409);
         await domain.resources.resourceAction(action, id);
         phase = 'models'; failure = undefined;
       } else {
-        if (action !== 'retry' || id !== undefined || phase !== 'failed') throw new AppError('SETUP_BUSY', '当前环境准备尚未失败。', 409);
-        if (bootAttempted) throw new AppError('RESTART_REQUIRED', '工作台启动失败，请查看错误后重启应用。', 409);
+        if (action !== 'retry' || id !== undefined || phase !== 'failed') throw new AppError('SETUP_BUSY', 'Chuẩn bị môi trường hiện chưa thất bại.', 409);
+        if (bootAttempted) throw new AppError('RESTART_REQUIRED', 'Không gian làm việc khởi động thất bại, hãy xem lỗi rồi khởi động lại ứng dụng.', 409);
         prepare();
       }
     }
@@ -157,7 +157,7 @@ export function registerSetupRoutes(ctx, transport, config, activate, installati
     await client.close();
   });
   transport.assertReady = path => {
-    if (path !== '/api/setup' && phase !== 'ready') throw new AppError('ENVIRONMENT_NOT_READY', failure || 'YouDub 运行环境正在准备。', 503, { phase });
+    if (path !== '/api/setup' && phase !== 'ready') throw new AppError('ENVIRONMENT_NOT_READY', failure || 'Môi trường chạy YouDub đang được chuẩn bị.', 503, { phase });
   };
   if (phase !== 'installation') prepare();
 }

@@ -8,7 +8,7 @@ export interface DownloadFile { url: string; mirrors?: string[]; sourceGroup?: s
 export interface DownloadSourceEvent { url: string; status: 'checking' | 'selected' | 'failed'; error?: string }
 export function sourceName(url: string) {
   const host = new URL(url).hostname
-  return ({ 'github.com': 'GitHub', 'huggingface.co': 'Hugging Face', 'modelscope.cn': 'ModelScope', 'registry.npmmirror.com': '阿里 npmmirror', 'modelscope-open.oss-cn-hangzhou.aliyuncs.com': 'ModelScope 阿里云 OSS' } as Record<string, string>)[host] || host
+  return ({ 'github.com': 'GitHub', 'huggingface.co': 'Hugging Face', 'modelscope.cn': 'ModelScope', 'registry.npmmirror.com': 'npmmirror (Alibaba)', 'modelscope-open.oss-cn-hangzhou.aliyuncs.com': 'ModelScope (Alibaba Cloud OSS)' } as Record<string, string>)[host] || host
 }
 export async function fileSize(path: string): Promise<number> {
   try { const info = await stat(path); return info.isFile() ? info.size : 0 }
@@ -23,7 +23,7 @@ export function downloadError(error: unknown, url: string): Error {
   const causes: string[] = []
   let current: unknown = error
   while (current instanceof Error) { causes.push(current.message); current = current.cause }
-  return Object.assign(new Error(`下载失败：${url}\n${causes.join('\n')}`, { cause: error }), { code: 'DOWNLOAD_SOURCE_FAILED' })
+  return Object.assign(new Error(`Tải xuống thất bại: ${url}\n${causes.join('\n')}`, { cause: error }), { code: 'DOWNLOAD_SOURCE_FAILED' })
 }
 
 /** Probe the official source first, then use declared mirrors with visible failures. */
@@ -39,7 +39,7 @@ export class DownloadClient {
     try {
       const response = await fetch(url, { dispatcher: this.agent, signal: AbortSignal.any([signal, AbortSignal.timeout(3000)]), headers: { Range: 'bytes=0-0', 'Accept-Encoding': 'identity' } })
       await response.body?.cancel()
-      if (!response.ok) throw new Error(`连通性测试 HTTP ${response.status}: ${url}`)
+      if (!response.ok) throw new Error(`Kiểm tra kết nối HTTP ${response.status}: ${url}`)
       this.checks.set(key, { at: Date.now() })
     } catch (cause) {
       signal.throwIfAborted()
@@ -53,12 +53,12 @@ export class DownloadClient {
     await mkdir(dirname(target), { recursive: true })
     const present = await fileSize(target)
     if (present) {
-      if (present !== file.size || !(await checksum(target)).startsWith(file.sha256)) throw new Error(`文件校验失败：${target}。请移走该文件后重试。`)
+      if (present !== file.size || !(await checksum(target)).startsWith(file.sha256)) throw new Error(`Xác minh tệp thất bại: ${target}. Hãy chuyển tệp này đi rồi thử lại.`)
       progress(present); return
     }
     const partial = target + '.part'
     let received = await fileSize(partial)
-    if (received > file.size) throw new Error(`未完成文件超过预期大小：${partial}。请移走该文件后重试。`)
+    if (received > file.size) throw new Error(`Tệp chưa hoàn tất vượt quá kích thước dự kiến: ${partial}. Hãy chuyển tệp này đi rồi thử lại.`)
     progress(received)
     const urls = [...new Set([file.url, ...(file.mirrors || [])])]
     const failures: Error[] = []
@@ -72,21 +72,21 @@ export class DownloadClient {
         if (!response.ok || !response.body) { await response.body?.cancel(); throw downloadError(new Error(`HTTP ${response.status}`), url) }
         if (received && (response.status !== 206 || !response.headers.get('content-range')?.startsWith(`bytes ${received}-`))) {
           await response.body.cancel()
-          throw downloadError(new Error(`下载源未接受断点 ${received}，保留已下载文件：${partial}`), url)
+          throw downloadError(new Error(`Nguồn tải không chấp nhận điểm tiếp tục ${received}, giữ lại tệp đã tải: ${partial}`), url)
         }
         const output = await open(partial, received ? 'a' : 'w', 0o600)
         let writing = false
         try {
           for await (const chunk of response.body) {
             signal.throwIfAborted(); writing = true
-            if (received + chunk.length > file.size) throw new Error(`下载内容超过清单大小：${url}`)
+            if (received + chunk.length > file.size) throw new Error(`Nội dung tải vượt quá kích thước trong manifest: ${url}`)
             let offset = 0
             while (offset < chunk.length) { const { bytesWritten } = await output.write(chunk, offset, chunk.length - offset); offset += bytesWritten }
             received += chunk.length; progress(received); writing = false
           }
         } catch (error) { if (writing || signal.aborted) throw error; throw downloadError(error, url) }
         finally { await output.close() }
-        if (received !== file.size) throw downloadError(new Error(`下载不完整 (${received}/${file.size})`), url)
+        if (received !== file.size) throw downloadError(new Error(`Tải xuống chưa hoàn tất (${received}/${file.size})`), url)
         break
       } catch (error: any) {
         signal.throwIfAborted()
@@ -97,8 +97,8 @@ export class DownloadClient {
       }
     }
     signal.throwIfAborted()
-    if (received !== file.size) throw new Error(`下载不完整：${target} (${received}/${file.size})`)
-    if (!(await checksum(partial)).startsWith(file.sha256)) throw new Error(`下载校验失败：${partial}。请移走该文件后重试。`)
+    if (received !== file.size) throw new Error(`Tải xuống chưa hoàn tất: ${target} (${received}/${file.size})`)
+    if (!(await checksum(partial)).startsWith(file.sha256)) throw new Error(`Xác minh tải xuống thất bại: ${partial}. Hãy chuyển tệp này đi rồi thử lại.`)
     signal.throwIfAborted()
     await rename(partial, target)
   }

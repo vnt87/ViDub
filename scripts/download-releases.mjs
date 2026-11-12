@@ -9,7 +9,7 @@ export function downloadReleases(releases, latestTag) {
     const version = item.tag_name.slice(1)
     const assets = item.assets.filter(asset => asset.state === 'uploaded' && asset.size > 0)
     const platforms = [
-      { id: 'macos-arm64', name: 'macOS', requirements: 'macOS 14+ · Apple 芯片', file: `YouDub-${version}-macOS-arm64.dmg` },
+      { id: 'macos-arm64', name: 'macOS', requirements: 'macOS 14+ · chip Apple', file: `YouDub-${version}-macOS-arm64.dmg` },
       { id: 'windows-x64', name: 'Windows', requirements: 'Windows 10 22H2 / 11 · x64', file: `YouDub-${version}-windows-x64.zip` },
     ].flatMap(platform => {
       const asset = assets.find(asset => asset.name === platform.file)

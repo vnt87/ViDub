@@ -59,7 +59,7 @@ for (const [name, modelSettings, route = 'deepseek'] of [
     credentialPresent = false;
     await provider.probe();
     assert.equal(provider.describe().available, false);
-    assert.match(provider.describe().unavailableReason, /凭据/);
+    assert.match(provider.describe().unavailableReason, /thông tin xác thực/);
   } finally {
     await adapter.dispose(); await services.dispose(); await runtime.dispose();
   }

@@ -25,7 +25,7 @@ test('official Host scope preserves root services and requires all first-run mod
   const ctx = new Context(), handlers = new Map();
   const sub = ctx.plugin(LocalSubprocess); await sub;
   const jobs = ctx.plugin(LocalJobs); await jobs;
-  let preferences = { ui_language: 'zh', defaults: null, plugins: { 'youdub.onboarding': { resourcesPrepared: true, resourceSelections: [{ providerId: 'whisper', model: 'tiny' }] } }, connections: [] }, revision = 0;
+  let preferences = { ui_language: 'vi', defaults: null, plugins: { 'youdub.onboarding': { resourcesPrepared: true, resourceSelections: [{ providerId: 'whisper', model: 'tiny' }] } }, connections: [] }, revision = 0;
   const forms = { describe: () => [{ ns: 'youdub-subtitles', value: { preferences }, revision }], update: async (ns, patch, expected) => {
     assert.equal(ns, 'youdub-subtitles'); assert.equal(expected, revision); preferences = patch.preferences; revision++;
   } };
@@ -106,7 +106,7 @@ test('official Host scope preserves root services and requires all first-run mod
         const rejected = await call('PATCH', '/api/v2/settings', body);
         assert.equal(rejected.status, 503); assert.equal(rejected.body.error.code, 'ENVIRONMENT_NOT_READY');
       }
-      assert.equal(preferences.ui_language, 'zh'); assert.equal(revision, 0);
+      assert.equal(preferences.ui_language, 'vi'); assert.equal(revision, 0);
     });
     await t.test('local workflow sample supports partial reads', async () => {
       const video = await handlers.get('/api/youdub/examples/assets/jensen-en.mp4').fetch(new Request('http://localhost/api/youdub/examples/assets/jensen-en.mp4', { headers: { range: 'bytes=0-63' } }));
@@ -145,7 +145,7 @@ test('missing explicit Python keeps official setup accessible and reports the or
       if (setup.body.phase === 'failed') break;
       assert(attempt < 100); await new Promise(resolve => setTimeout(resolve, 20));
     }
-    assert.equal(setup.body.error, `配置的 Python 不存在：${python}`);
+    assert.equal(setup.body.error, `Python đã cấu hình không tồn tại: ${python}`);
     assert.equal(setup.body.canRetry, true);
     assert.equal(setup.body.environment[0].status, 'failed');
     const unavailable = await call('GET', '/api/v2/catalog');

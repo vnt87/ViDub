@@ -7,7 +7,7 @@ import { parseWorkflowDocument } from './workflow-document.js'
 export const name = 'workflow-graph'
 export const inject = ['catalog']
 const ajv = new Ajv({ strict: false, allErrors: true })
-const label = (value: NodeTypeDefinition['label']) => typeof value === 'string' ? value : value.translations?.zh ?? value.default
+const label = (value: NodeTypeDefinition['label']) => typeof value === 'string' ? value : value.translations?.vi ?? value.default
 export function nodeTypes(catalog: CatalogService): NodeTypeDefinition[] {
   return catalog.listProviders().flatMap(provider => provider.operations.filter(operation => operation.node).map(operation => ({ ...structuredClone(operation.node!), providerId: provider.id, operation: operation.id, outputs: structuredClone(operation.outputs), provider })))
 }
@@ -89,7 +89,7 @@ export function inspectGraph(value: unknown, catalog: CatalogService, runtime: R
 export async function apply(ctx: Context, plugin: { integrity: string; compatibleIntegrities?: string[] }) {
   const workflow: GraphWorkflowDefinition = {
     id: 'youdub.graph', version: '1.0.0', pluginId: 'youdub.workflow-graph', pluginVersion: '1.0.0', integrity: plugin.integrity, compatibleIntegrities: plugin.compatibleIntegrities,
-    describe: () => ({ id: workflow.id, version: workflow.version, label: '节点工作流', inputs: [], configSchema: { type: 'object', additionalProperties: false }, defaults: {}, ui: { editor: 'youdub.graph' } }),
+    describe: () => ({ id: workflow.id, version: workflow.version, label: 'Quy trình nút', inputs: [], configSchema: { type: 'object', additionalProperties: false }, defaults: {}, ui: { editor: 'youdub.graph' } }),
     graph: { compile: async (request: GraphCompileRequest, catalog) => {
       const result = inspectGraph(request.document, catalog, request.nodeRuntimeInputs)
       const { document, diagnostics, order, types, options } = result

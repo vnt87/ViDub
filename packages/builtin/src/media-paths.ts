@@ -3,8 +3,8 @@ import { join } from 'node:path'
 import runtimeManifest from './setup-runtime.json' with { type: 'json' }
 
 /**
- * Windows 的 FFmpeg 压缩包会按命中的下载源解压成不同目录，安装器和运行时必须用同一个目录。
- * 返回包含 ffmpeg/ffprobe 的目录：Windows 为解压出的 bin，其他平台直接是 runtime/ffmpeg。
+ * Gói nén FFmpeg trên Windows được giải nén thành thư mục khác nhau tùy theo nguồn tải, nên trình cài đặt và runtime phải dùng cùng một thư mục.
+ * Trả về thư mục chứa ffmpeg/ffprobe: trên Windows là thư mục bin sau khi giải nén, các nền tảng khác là runtime/ffmpeg.
  */
 export function ffmpegDirectory(root: string, platform = process.platform) {
   const directory = join(root, 'runtime', 'ffmpeg')

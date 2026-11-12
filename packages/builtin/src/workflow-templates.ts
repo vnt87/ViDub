@@ -20,10 +20,10 @@ export function workflowTemplates(catalog: CatalogService, settings: JsonObject)
     }
     return document
   }
-  const plain = build(subtitles, 'youdub.subtitles', '字幕翻译')
+  const plain = build(subtitles, 'youdub.subtitles', 'Dịch phụ đề')
   plain.nodes.forEach(node => { node.autoContinue = true })
-  const dub = build(dubbing, 'youdub.dubbing', '视频配音')
-  const both = build(dubbing, 'youdub.subtitles-dubbing', '字幕＋配音')
+  const dub = build(dubbing, 'youdub.dubbing', 'Lồng tiếng video')
+  const both = build(dubbing, 'youdub.subtitles-dubbing', 'Phụ đề + lồng tiếng')
   both.nodes.find(node => node.type === 'youdub.export')!.config.renderSubtitles = true
   both.outputs.push(...structuredClone(plain.outputs.filter(output => output.schemaId === 'application/x-subrip/v1')))
   const records: { id: string; revision: number; origin: 'builtin' | 'plugin'; document: WorkflowDocument }[] = [plain, dub, both].map(document => ({ id: document.id, revision: 0, origin: 'builtin', document }))

@@ -2,6 +2,14 @@ import type { Endpoint, GraphNode, NodeTypeDefinition, WorkflowDocument } from '
 import { text } from '../sdk'
 import { translateMessage, type MessageKey, type Text } from '@/locales'
 
+// Saved workflows created before the Vietnamese UI carry these Chinese names; they are matched
+// only to migrate their display text. Deliberately kept Chinese data.
+const legacyChineseNames: Partial<Record<MessageKey, string>> = {
+  'workflows.template.subtitles': '字幕翻译', 'workflows.template.dubbing': '视频配音', 'workflows.template.subtitlesDubbing': '字幕＋配音',
+  'workflow.run.video': '视频', 'workflows.output.dubbedVideo': '配音视频', 'workflows.output.dubbedAudio': '配音音频',
+  'workflows.output.sourceSubtitles': '原文字幕', 'workflows.output.translatedSubtitles': '译文字幕',
+}
+
 const templateTitles: Record<string, MessageKey> = {
   'youdub.subtitles': 'workflows.template.subtitles',
   'youdub.dubbing': 'workflows.template.dubbing',
@@ -15,10 +23,10 @@ const templatePorts: Record<string, MessageKey[]> = {
 }
 export function workflowTemplateTitle(document: WorkflowDocument, tx: Text) {
   const key = templateTitles[document.id]
-  return key && document.title === translateMessage('zh', key) ? tx(key) : document.title
+  return key && document.title === legacyChineseNames[key] ? tx(key) : document.title
 }
 export function workflowPortLabel(document: WorkflowDocument, port: { id: string; label: string }, tx: Text) {
-  const key = templateTitles[document.id] && templatePorts[port.id]?.find(key => port.label === translateMessage('zh', key))
+  const key = templateTitles[document.id] && templatePorts[port.id]?.find(key => port.label === legacyChineseNames[key])
   return key ? tx(key) : port.label
 }
 /** A saved copy receives the names currently displayed; custom names remain unchanged. */

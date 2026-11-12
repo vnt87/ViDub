@@ -125,14 +125,14 @@ it('persists Configure later through the injected transport and restores it on t
 })
 
 it('explains an unavailable translation provider and clears the reason after repair', async () => {
-  const provider = { id: 'llm.example', label: 'Example', capability: 'translation', available: false, unavailableReason: '模型输出容量不足。' }
+  const provider = { id: 'llm.example', label: 'Example', capability: 'translation', available: false, unavailableReason: 'Mô hìnhĐầu ra容量不足。' }
   const request = vi.fn(async (path: string) => path === '/api/v2/catalog' ? { providers: [
     { ...provider, id: 'openai', legacy: true, unavailableReason: 'legacy provider' }, provider,
   ] } : {})
   const controller = new TranslationSetupController(request as never)
   controller.start()
   await vi.waitFor(() => expect(controller.getSnapshot().loaded).toBe(true))
-  expect(controller.getSnapshot()).toMatchObject({ configured: false, ready: false, error: 'Example: 模型输出容量不足。' })
+  expect(controller.getSnapshot()).toMatchObject({ configured: false, ready: false, error: 'Example: Mô hìnhĐầu ra容量不足。' })
   controller.continue()
   expect(controller.getSnapshot().ready).toBe(false)
   provider.available = true

@@ -1,5 +1,5 @@
 import en from './en.json'
-import zh from './zh.json'
+import vi from './vi.json'
 import ja from './ja.json'
 
 export type MessageKey = keyof typeof en.messages
@@ -13,7 +13,7 @@ export interface LanguagePack {
 }
 
 // One catalog for settings, business copy and Harness language registration.
-export const languagePacks: readonly LanguagePack[] = [zh, en, ja]
+export const languagePacks: readonly LanguagePack[] = [vi, en, ja]
 export type UiLanguage = string
 export const LANGUAGE_OPTIONS = languagePacks.map(({ id, label, short }) => ({ value: id, label, short }))
 export type Text = (key: MessageKey, params?: MessageParams) => string

@@ -17,8 +17,8 @@ export function fieldOptions(schema: JsonSchema, model?: Record<string, unknown>
   if (values) return { options: values.map(value => ({ value, label: declared.find(option => option.value === value)?.label ?? String(value) })), constrained: true }
   if (declared.length) return { options: [...declared], constrained: true }
   if (fieldType(schema) === 'boolean') return { options: [
-    { value: true, label: { default: 'On', translations: { zh: '开启', ja: 'オン' } } },
-    { value: false, label: { default: 'Off', translations: { zh: '关闭', ja: 'オフ' } } },
+    { value: true, label: { default: 'On', translations: { vi: 'Bật', ja: 'オン' } } },
+    { value: false, label: { default: 'Off', translations: { vi: 'Tắt', ja: 'オフ' } } },
   ], constrained: false }
   return { options: [], constrained: false }
 }

@@ -56,7 +56,7 @@ def media_error():
     for name, command in (("ffmpeg", ffmpeg_binary()), ("ffprobe", ffprobe_binary())):
         path = shutil.which(command)
         if not path:
-            return f"缺少可执行的 {name}：{command}"
+            return f"Thiếu {name} có thể thực thi: {command}"
         args = [path, "-hide_banner", "-filters"] if name == "ffmpeg" else [path, "-version"]
         try:
             result = subprocess.run(args, capture_output=True, text=True, encoding="utf-8", errors="replace",
@@ -66,9 +66,9 @@ def media_error():
         if result.returncode != 0:
             return f"{command} exited ({result.returncode}).\n{result.stderr}"
         if name == "ffmpeg" and not re.search(r"\bsubtitles\b", result.stdout):
-            return f"FFmpeg 缺少 subtitles 滤镜：{path}"
+            return f"FFmpeg thiếu bộ lọc subtitles: {path}"
         if os.name == "nt" and not any(Path(path).parent.glob("av*.dll")):
-            return f"{name} 缺少共享 av*.dll：{path}"
+            return f"{name} thiếu av*.dll dùng chung: {path}"
     return None
 
 

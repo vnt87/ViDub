@@ -74,7 +74,7 @@ function Composer({ workflow, draftStore, afterInputs, onLockChange, request, na
               setSourceUrl(event.target.value); setLinkTouched(false); setError('')
               if (event.target.value) setFiles((current) => { const next = { ...current }; delete next[linkSlot]; return next })
             }} />
-            {source && <span className="shrink-0 text-xs text-muted-foreground">{source.platform === 'Bilibili' ? 'B 站' : 'YouTube'}</span>}
+            {source && <span className="shrink-0 text-xs text-muted-foreground">{source.platform === 'Bilibili' ? 'Bilibili' : 'YouTube'}</span>}
             {sourceUrl && <Button type="button" variant="ghost" size="icon-sm" disabled={busy || !!pendingId} aria-label={tx("studio.clear.link")} onClick={() => { setSourceUrl(''); setLinkTouched(false) }}><X /></Button>}
           </div>
           {linkTouched && linkError && <div className="mt-2"><InlineAlert>{linkError}</InlineAlert></div>}

@@ -43,13 +43,18 @@ const progressMessages: Record<string, MessageKey> = {
   "Rendering output video": "task.progress.export.render",
   "Output media is ready": "task.progress.export.complete",
   "翻译完成": "task.progress.translation.complete",
+  "Đã dịch xong": "task.progress.translation.complete",
+  "Đang đọc liên kết video": "task.progress.download.parse",
+  "Đang tải video": "task.progress.download.active",
+  "Đang ghép và kiểm tra video": "task.progress.download.check",
+  "Đã tải xong video": "task.progress.download.complete",
   "All source segments have translations": "task.progress.translation.complete",
 }
 
-// Keep persisted provider messages and raw logs unchanged; localize their display.
+// Giữ nguyên thông điệp nhà cung cấp và nhật ký gốc đã lưu (kể cả bản tiếng Trung cũ); chỉ bản hiển thị được dịch.
 export function taskProgressMessage(message: string, tx: Text): string {
   if (progressMessages[message]) return tx(progressMessages[message])
-  const batch = /^(?:翻译|Translating batch) (\d+)\/(\d+)$/.exec(message)
+  const batch = /^(?:翻译|Dịch|Translating batch) (\d+)\/(\d+)$/.exec(message)
   if (batch) return tx('task.progress.translation.batch', { current: batch[1], total: batch[2] })
   const adjusted = /^Adjusted (\d+)\/(\d+) speech clips$/.exec(message)
   if (adjusted) return tx('task.progress.mix.adjusted', { current: adjusted[1], total: adjusted[2] })

@@ -77,7 +77,7 @@ try {
     const original = dialog.showMessageBox;
     dialog.showMessageBox = (...args) => {
       const options = args.at(-1);
-      if (/退出 YouDub|Quit YouDub|YouDub を終了/.test(options.message)) return Promise.resolve({ response: 0, checkboxChecked: false });
+      if (/Thoát YouDub|Quit YouDub|YouDub を終了/.test(options.message)) return Promise.resolve({ response: 0, checkboxChecked: false });
       return original(...args);
     };
   });
@@ -141,16 +141,16 @@ try {
   assert.doesNotMatch(text, /DeepSeek Harness/);
   assert.equal(await page.evaluate(() => typeof globalThis.youdubDesktopBoot?.ready), 'function');
   assert.equal(await page.evaluate(() => typeof globalThis.dshDesktopBoot), 'undefined');
-  if (!configured) assert.match(text, workbench ? /工作台|Workbench/ : /安装|Install|installation|开始|Get started/);
+  if (!configured) assert.match(text, workbench ? /Không gian làm việc|Workbench/ : /Cài đặt|Install|installation|Bắt đầu|Get started/);
   if (workbench) {
     const tasks = await evaluate(`(async () => {
       const response = await fetch('/api/youdub/v2', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({method:'GET',path:'/api/v2/tasks'}) });
       return {status:response.status, body:await response.text()};
     })()`);
     assert.equal(tasks.status, 200, tasks.body);
-    await page.getByRole('button', { name: /使用黄仁勋采访视频|Use Jensen Huang interview/ }).click();
+    await page.getByRole('button', { name: /Dùng video phỏng vấn Jensen Huang|Use Jensen Huang interview/ }).click();
     await page.getByText('jensen-en.mp4', { exact: true }).waitFor();
-    assert.equal(await page.getByRole('link', { name: /查看官网示例|View website examples/ }).getAttribute('href'), 'https://liuzhao1225.github.io/YouDub-webui/#demo');
+    assert.equal(await page.getByRole('link', { name: /Xem ví dụ trên trang web|View website examples/ }).getAttribute('href'), 'https://liuzhao1225.github.io/YouDub-webui/#demo');
   }
   const sample = await evaluate(`(async () => {
     const response = await fetch('/api/youdub/examples/assets/jensen-en.mp4', {headers:{Range:'bytes=0-1023'}});
@@ -160,13 +160,13 @@ try {
   assert.equal(sample.bytes, 1024);
   if (!workbench && !configured) {
     await page.locator('#setup-language').click();
-    await page.getByRole('menuitem', { name: '中文', exact: true }).click();
-    await page.getByLabel('安装目录', { exact: true }).fill(join(temporary, 'YouDub media'));
+    await page.getByRole('menuitem', { name: 'Tiếng Việt', exact: true }).click();
+    await page.getByLabel('Thư mục cài đặt', { exact: true }).fill(join(temporary, 'YouDub media'));
     const submitted = page.waitForResponse(response => {
       const body = response.request().postData();
       return response.url().endsWith('/api/youdub/v2') && body && JSON.parse(body).body?.action === 'configure';
     });
-    await page.getByRole('button', { name: '确认并准备环境', exact: true }).click();
+    await page.getByRole('button', { name: 'Xác nhận và chuẩn bị', exact: true }).click();
     const configuration = await submitted;
     assert.equal(configuration.status(), 200, await configuration.text());
     await page.locator('#setup-directory').waitFor({ state: 'detached' });

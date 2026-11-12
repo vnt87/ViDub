@@ -1,7 +1,8 @@
 import { languagePacks, type LanguagePack } from '../../../web/src/locales'
 import japanese from '../../locales/ja.json'
+import vietnamese from '../../locales/vi.json'
 
-export const frameworkDictionaries: Record<string, Record<string, Record<string, string>>> = { ja: japanese }
+export const frameworkDictionaries: Record<string, Record<string, Record<string, string>>> = { vi: vietnamese, ja: japanese }
 
 /** Public Harness language-pack API; preferences, fallback and UI are upstream-owned. */
 export function registerLanguagePack(ctx: any, pack: LanguagePack, dictionaries: Record<string, Record<string, string>> = {}) {

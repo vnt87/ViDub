@@ -15,10 +15,10 @@ from .protocol import WorkerError
 
 def video_url(value: str) -> str:
     if not isinstance(value, str):
-        raise WorkerError("INVALID_VIDEO_URL", "请输入有效的视频链接。")
+        raise WorkerError("INVALID_VIDEO_URL", "Hãy nhập liên kết video hợp lệ.")
     parsed = urlparse(value)
     if parsed.scheme not in {"http", "https"} or parsed.username or parsed.password or parsed.port:
-        raise WorkerError("INVALID_VIDEO_URL", "视频链接必须是公开的 HTTP(S) 视频地址。")
+        raise WorkerError("INVALID_VIDEO_URL", "Liên kết video phải là địa chỉ video HTTP(S) công khai.")
     host, path, query = parsed.hostname, parsed.path, parse_qs(parsed.query)
     if host == "youtu.be":
         identity = path.strip("/")
@@ -35,7 +35,7 @@ def video_url(value: str) -> str:
             return f"https://www.bilibili.com/video/{match[1]}/" + (f"?p={part}" if part else "")
     if host == "b23.tv" and re.fullmatch(r"/[\da-zA-Z]+/?", path):
         return f"https://b23.tv{path}"
-    raise WorkerError("INVALID_VIDEO_URL", "请输入 YouTube 或 B 站的单个视频链接。")
+    raise WorkerError("INVALID_VIDEO_URL", "Hãy nhập một liên kết video YouTube hoặc Bilibili.")
 
 
 class VideoRedirect(HTTPRedirectHandler):
@@ -61,23 +61,23 @@ def download_video(url: str, work: Path, wire, *, proxy_port: int | None) -> tup
     if proxy_port is None or proxy_port == "":
         proxy_port = 0
     if type(proxy_port) is not int or not 0 <= proxy_port <= 65535:
-        raise WorkerError("INVALID_CONFIG", "本机 HTTP 代理端口须为 1–65535，0 或留空表示直连。")
+        raise WorkerError("INVALID_CONFIG", "Cổng proxy HTTP cục bộ phải từ 1–65535; 0 hoặc để trống nghĩa là kết nối trực tiếp.")
     proxy = f"http://127.0.0.1:{proxy_port}" if proxy_port else ""
     url = video_url(url)
     wire.check_cancel()
-    wire.progress(None, "解析视频链接")
+    wire.progress(None, "Đang đọc liên kết video")
     if urlparse(url).hostname == "b23.tv":
         proxies = {"http": proxy, "https": proxy} if proxy else {}
         with build_opener(ProxyHandler(proxies), VideoRedirect()).open(Request(url, headers=std_headers), timeout=20) as response:
             url = video_url(response.url)
         if urlparse(url).hostname == "b23.tv":
-            raise WorkerError("INVALID_VIDEO_URL", "B 站短链接没有指向视频。")
+            raise WorkerError("INVALID_VIDEO_URL", "Liên kết rút gọn Bilibili không trỏ tới video.")
     last_update = 0.0
 
     def admission(info, *, incomplete=False):
         wire.check_cancel()
         if info.get("is_live") or info.get("live_status") == "is_upcoming":
-            raise WorkerError("UNSUPPORTED_MEDIA", "暂不支持直播或尚未发布的视频。")
+            raise WorkerError("UNSUPPORTED_MEDIA", "Chưa hỗ trợ phát trực tiếp hoặc video chưa được công bố.")
 
     def progress(event):
         nonlocal last_update
@@ -88,17 +88,17 @@ def download_video(url: str, work: Path, wire, *, proxy_port: int | None) -> tup
         if stamp - last_update >= 0.4 or event.get("status") == "finished":
             last_update = stamp
             value = min(count / total, 1) if total else None
-            wire.progress(value, "下载视频" if event.get("status") != "finished" else "合并并检查视频")
+            wire.progress(value, "Đang tải video" if event.get("status") != "finished" else "Đang ghép và kiểm tra video")
 
     ffmpeg = shutil.which(ffmpeg_binary())
     if not ffmpeg:
-        raise WorkerError("MEDIA_TOOLS_UNAVAILABLE", "找不到 FFmpeg，无法合并下载的视频。")
+        raise WorkerError("MEDIA_TOOLS_UNAVAILABLE", "Không tìm thấy FFmpeg nên không thể ghép video đã tải.")
     node = os.getenv("YOUDUB_NODE_PATH", "").strip()
     if node:
         if not Path(node).is_absolute() or not Path(node).is_file() or not os.access(node, os.X_OK):
-            raise WorkerError("RUNTIME_UNAVAILABLE", "YouDub 私有 Node.js 路径无效或不可执行。")
+            raise WorkerError("RUNTIME_UNAVAILABLE", "Đường dẫn Node.js riêng của YouDub không hợp lệ hoặc không thể thực thi.")
     elif os.getenv("YOUDUB_HARNESS_RUNTIME") == "1":
-        raise WorkerError("RUNTIME_UNAVAILABLE", "YouDub 私有 Node.js 路径未配置。")
+        raise WorkerError("RUNTIME_UNAVAILABLE", "Chưa cấu hình đường dẫn Node.js riêng của YouDub.")
     else:
         node = shutil.which("node") or "node"
     options = {
@@ -121,10 +121,10 @@ def download_video(url: str, work: Path, wire, *, proxy_port: int | None) -> tup
         info = downloader.extract_info(url, download=True)
         wire.check_cancel()
         if not info or info.get("_type", "video") != "video":
-            raise WorkerError("INVALID_MEDIA", "链接没有返回单个视频。")
+            raise WorkerError("INVALID_MEDIA", "Liên kết không trả về một video duy nhất.")
         path = Path(downloader.prepare_filename(info)).resolve()
     if not path.is_relative_to(work.resolve()) or not path.is_file() or not path.stat().st_size:
-        raise WorkerError("DOWNLOAD_MISSING", "下载没有生成完整视频文件。")
+        raise WorkerError("DOWNLOAD_MISSING", "Quá trình tải không tạo ra tệp video hoàn chỉnh.")
     media = inspect_video(path, wire.check_cancel)
-    wire.progress(1, "视频下载完成")
+    wire.progress(1, "Đã tải xong video")
     return path, {"sourceUrl": url, "title": info.get("title"), "durationMs": media["duration_ms"]}

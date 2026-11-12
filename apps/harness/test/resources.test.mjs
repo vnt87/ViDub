@@ -50,7 +50,7 @@ test('direct shared resource preparation has a bounded dependency scope and no m
     assert.equal(result.status, 'ready'); assert.equal(result.entries.find(item => item.id === id).status, 'ready');
     assert.equal(result.models.length, 0);
   }
-  await assert.rejects(app.resources.resourceTargets(['arbitrary-package']), /未知资源/);
+  await assert.rejects(app.resources.resourceTargets(['arbitrary-package']), /Tài nguyên không xác định/);
 });
 
 test('preparing an existing model installs its missing dependencies and reports one usable entry', async t => {

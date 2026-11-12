@@ -82,9 +82,9 @@ test('translation uses official Harness call defaults and surfaces provider reje
       assert.match(JSON.stringify(calls[0].body.messages.at(-1).content), /hello/);
       const system = calls[0].body.messages.find(message => message.role === 'system').content;
       assert.equal(createHash('sha256').update(system.slice(system.indexOf('\n\n') + 2)).digest('hex'),
-        '40c70237fdf1a4961bc3df9ee6f2d5c30ba361ba17904d2c4bfc0afbef3580f0');
-      assert.match(system, /对于长句，使用逗号进行更详细的分句。/);
-      assert.match(system, /必须使用标点。/);
+        '5da362143086ee227df336f0336e6818be2c0577a30ff845735fd2898af90ca0');
+      assert.match(system, /Với câu dài, dùng dấu phẩy để tách câu chi tiết hơn\./);
+      assert.match(system, /Bắt buộc dùng dấu câu\./);
       assert.match(system, /Preserve every segment_id exactly once/);
       const evidence = JSON.parse(await readFile(join(run.dir, 'translation_raw/0001.request.json'), 'utf8'));
       assert.equal(evidence.maxTokens, 2048); assert.equal(evidence.messages[0].content[0].type, 'text');
@@ -122,7 +122,7 @@ test('translation uses official Harness call defaults and surfaces provider reje
       assert.deepEqual(result.outputs.translation.segments.map(segment => segment.segment_id), ['s1']);
       assert.equal(calls.at(-1).body.max_tokens, 2048);
       const system = calls.at(-1).body.messages.find(message => message.role === 'system').content;
-      assert.doesNotMatch(system, /对于长句，使用逗号进行更详细的分句。/);
+      assert.doesNotMatch(system, /Với câu dài, dùng dấu phẩy để tách câu chi tiết hơn\./);
       assert.match(system, /Translate from en to ja/);
     });
     await t.test('both configured DeepSeek models reach chat completions without an explicit API protocol', async () => {

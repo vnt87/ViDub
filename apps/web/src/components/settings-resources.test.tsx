@@ -11,7 +11,7 @@ const inventory: ResourceInventory = {
   version: '0.0.7', platform: 'darwin', arch: 'arm64', osVersion: '25', homeDir: '/Users/test',
   environment: [{ id: 'python', name: 'Python 3.12', status: 'ready' }],
   items: [{ providerId: 'youdub.media', label: 'FFmpeg', automatic: true }, { providerId: 'whisper', model: 'tiny', label: 'Whisper', automatic: true, downloadId: 'whisper' }],
-  models: [{ id: 'whisper', name: 'Whisper', variant: 'tiny', purpose: '语音识别', received: 0, total: 100, speed: 0, status: 'pending' }],
+  models: [{ id: 'whisper', name: 'Whisper', variant: 'tiny', purpose: 'Nhận dạng giọng nói', received: 0, total: 100, speed: 0, status: 'pending' }],
 }
 const inspection: ResourcePreparation = { status: 'missing', selections: [],
   environment: [{ id: 'python', name: 'Python 3.12', status: 'ready' }, { id: 'ffmpeg', name: 'FFmpeg', status: 'pending' }],
@@ -23,21 +23,21 @@ inspection.entries = resourceEntries({ ...inspection, requirements: inspection.r
 
 it('shows one FFmpeg row and prepares only the clicked model after explicit user action', async () => {
   const request = vi.fn(async (path: string) => path.endsWith('/resources') ? inventory : inspection)
-  render(<LanguageProvider><SettingsResources title="资源" request={request as never} /></LanguageProvider>)
-  await waitFor(() => expect(screen.getByRole('button', { name: '准备 Whisper' })).toBeEnabled())
+  render(<LanguageProvider><SettingsResources title="Tài nguyên" request={request as never} /></LanguageProvider>)
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Chuẩn bị Whisper' })).toBeEnabled())
   expect(screen.getAllByText('FFmpeg')).toHaveLength(1)
   expect(request.mock.calls.some(([path]) => path.endsWith('/prepare'))).toBe(false)
-  await userEvent.setup().click(screen.getByRole('button', { name: '准备 Whisper' }))
+  await userEvent.setup().click(screen.getByRole('button', { name: 'Chuẩn bị Whisper' }))
   const mutation = (request.mock.calls as unknown as [string, RequestInit][]).find(([path]) => path.endsWith('/prepare'))
   expect(JSON.parse(mutation![1].body as string)).toEqual({ resourceIds: ['whisper'] })
-  expect(screen.getByRole('region', { name: '诊断日志' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Nhật ký chẩn đoán' })).toBeInTheDocument()
 })
 
 it('keeps uninspected resource readiness explicit when the initial check fails', async () => {
   const request = vi.fn().mockResolvedValueOnce(inventory).mockRejectedValue(new Error('Python path unavailable'))
-  render(<LanguageProvider><SettingsResources title="资源" request={request} /></LanguageProvider>)
-  await waitFor(() => expect(screen.getByText('环境尚未检测')).toBeInTheDocument())
+  render(<LanguageProvider><SettingsResources title="Tài nguyên" request={request} /></LanguageProvider>)
+  await waitFor(() => expect(screen.getByText('Chưa kiểm tra môi trường')).toBeInTheDocument())
   expect(screen.queryByText('已就绪')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: /^准备 / })).not.toBeInTheDocument()
-  expect((screen.getByRole('textbox', { name: '诊断日志内容' }) as HTMLTextAreaElement).value).toContain('Python path unavailable')
+  expect(screen.queryByRole('button', { name: /^Chuẩn bị / })).not.toBeInTheDocument()
+  expect((screen.getByRole('textbox', { name: 'Nội dung nhật ký chẩn đoán' }) as HTMLTextAreaElement).value).toContain('Python path unavailable')
 })

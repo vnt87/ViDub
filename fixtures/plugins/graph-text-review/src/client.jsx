@@ -6,7 +6,7 @@ function TextReviewDetails({ outputs, draft, readOnly, onDraftChange }) {
   const value = draft.text ?? outputs.text;
   if (!value) return null;
   return <section data-testid="external-graph-review" style={{ display: 'grid', gap: '0.5rem' }}>
-    <label htmlFor={fieldId}>校对文本</label>
+    <label htmlFor={fieldId}>Văn bản hiệu đính</label>
     <Textarea id={fieldId} data-testid="external-graph-text" rows={6} value={value.text} readOnly={readOnly}
       onChange={event => onDraftChange({ ...draft, text: { ...value, text: event.target.value } })} />
   </section>;

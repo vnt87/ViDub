@@ -52,7 +52,7 @@ export async function checkLocales() {
     if (names.has(pack.id)) throw new Error(`Duplicate language ${pack.id}`)
     names.add(pack.id)
     validateDictionary(base, pack.messages, `YouDub ${pack.id}`)
-    if (['en', 'zh'].includes(pack.id)) continue
+    if (pack.id === 'en') continue
     const dictionaries = frameworkDictionaries[pack.id]
     if (!dictionaries) throw new Error(`Missing framework language pack: ${pack.id}`)
     for (const [namespace, path] of Object.entries(sources)) {

@@ -1,36 +1,36 @@
 ---
-name: 问题反馈
-about: 反馈界面、任务、工作流或使用过程中的问题
-title: "[问题反馈] "
+name: Báo lỗi
+about: Báo lỗi trong giao diện, tác vụ, quy trình hoặc quá trình sử dụng
+title: "[Báo lỗi] "
 labels: ''
 assignees: ''
 ---
 
-### 问题描述
+### Mô tả vấn đề
 
-请描述遇到的问题。
+Hãy mô tả vấn đề gặp phải.
 
-### 复现步骤
+### Các bước tái hiện
 
 1.
 2.
 
-### 预期结果
+### Kết quả mong đợi
 
-### 实际结果
+### Kết quả thực tế
 
-### 基础信息
+### Thông tin cơ bản
 
 ```text
 YouDub:
-系统:
-架构:
-页面:
-语言:
-主题:
-客户端:
+Hệ thống:
+Kiến trúc:
+Trang:
+Ngôn ngữ:
+Giao diện:
+Trình khách:
 ```
 
-### 日志或截图（可选）
+### Nhật ký hoặc ảnh chụp (không bắt buộc)
 
-请补充相关日志或截图，并移除 API Key、Token、密码等敏感信息。
+Hãy bổ sung nhật ký hoặc ảnh chụp liên quan, và xóa các thông tin nhạy cảm như API Key, Token, mật khẩu.

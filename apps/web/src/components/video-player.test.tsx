@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { VideoPlayer } from "@/components/video-player"
 import { LanguageProvider } from '@/test/language-provider'
 
-// jsdom 没有实现媒体播放和全屏，这里只验证播放器把操作正确转给了 video 元素。
+// jsdom 没有实现媒体Phát和Toàn màn hình，这里只验证Phát器把操作正确转给了 video 元素。
 beforeEach(() => {
   vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(function (this: HTMLMediaElement) {
     fireEvent.play(this)
@@ -30,13 +30,13 @@ function renderPlayer() {
       <VideoPlayer src="/api/tasks/task-a/artifact/final-video" />
     </LanguageProvider>,
   )
-  const player = screen.getByRole("region", { name: "视频播放器" })
+  const player = screen.getByRole("region", { name: "Trình phát video" })
   const video = player.querySelector("video") as HTMLVideoElement
   return { player, video }
 }
 
-describe("成品视频播放器", () => {
-  it("支持倍速、静音和全屏", async () => {
+describe("成品Trình phát video", () => {
+  it("支持Tốc độ phát, Tắt tiếng和Toàn màn hình", async () => {
     const user = userEvent.setup()
     const requestFullscreen = vi.fn(() => Promise.resolve())
     Object.defineProperty(HTMLElement.prototype, "requestFullscreen", {
@@ -46,7 +46,7 @@ describe("成品视频播放器", () => {
     const { player, video } = renderPlayer()
     expect(video).toHaveAttribute("src", "/api/tasks/task-a/artifact/final-video")
 
-    await user.click(within(player).getByRole("button", { name: "倍速" }))
+    await user.click(within(player).getByRole("button", { name: "Tốc độ phát" }))
     const menu = screen.getByRole("menu")
     expect(player.contains(menu)).toBe(false)
     expect(within(menu).getAllByRole("menuitem").map((item) => item.textContent)).toEqual([
@@ -60,37 +60,37 @@ describe("成品视频播放器", () => {
     await user.click(within(menu).getByRole("menuitem", { name: "1.5x" }))
     fireEvent.rateChange(video)
     expect(video.playbackRate).toBe(1.5)
-    expect(within(player).getByRole("button", { name: "倍速" })).toHaveTextContent("1.5x")
+    expect(within(player).getByRole("button", { name: "Tốc độ phát" })).toHaveTextContent("1.5x")
     expect(screen.queryByRole("menu")).not.toBeInTheDocument()
-    expect(within(player).getByRole("button", { name: "倍速" })).toHaveFocus()
+    expect(within(player).getByRole("button", { name: "Tốc độ phát" })).toHaveFocus()
 
-    await user.click(within(player).getByRole("button", { name: "静音" }))
+    await user.click(within(player).getByRole("button", { name: "Tắt tiếng" }))
     fireEvent.volumeChange(video)
     expect(video.muted).toBe(true)
-    await user.click(within(player).getByRole("button", { name: "取消静音" }))
+    await user.click(within(player).getByRole("button", { name: "Bật tiếng" }))
     fireEvent.volumeChange(video)
     expect(video.muted).toBe(false)
 
-    await user.click(within(player).getByRole("button", { name: "全屏" }))
+    await user.click(within(player).getByRole("button", { name: "Toàn màn hình" }))
     expect(requestFullscreen).toHaveBeenCalledTimes(1)
     expect(requestFullscreen.mock.contexts[0]).toBe(player)
     Object.defineProperty(document, "fullscreenElement", { configurable: true, value: player })
     fireEvent(document, new Event("fullscreenchange"))
-    await user.click(within(player).getByRole("button", { name: "倍速" }))
+    await user.click(within(player).getByRole("button", { name: "Tốc độ phát" }))
     expect(player.contains(screen.getByRole("menu"))).toBe(true)
     await user.keyboard("{Escape}")
     expect(screen.queryByRole("menu")).not.toBeInTheDocument()
-    expect(within(player).getByRole("button", { name: "倍速" })).toHaveFocus()
+    expect(within(player).getByRole("button", { name: "Tốc độ phát" })).toHaveFocus()
   })
 
-  it("播放器聚焦时支持键盘快捷键", async () => {
+  it("Phát器聚焦时支持键盘快捷键", async () => {
     const user = userEvent.setup()
     const { player, video } = renderPlayer()
 
     player.focus()
     await user.keyboard("k")
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
-    expect(within(player).getAllByRole("button", { name: "暂停" }).length).toBeGreaterThan(0)
+    expect(within(player).getAllByRole("button", { name: "Tạm dừng" }).length).toBeGreaterThan(0)
 
     await user.keyboard("m")
     expect(video.muted).toBe(true)

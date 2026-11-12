@@ -18,7 +18,7 @@ const OUTPUT_LABELS: Record<TaskConfig["output_mode"], MessageKey> = {
   "both": "output_labels.both"
 }
 
-const LANGUAGE_NAMES: Record<string, string> = { en: "English", zh: "中文", ja: "日本語" }
+const LANGUAGE_NAMES: Record<string, string> = { en: "English", vi: "Tiếng Việt", zh: "中文", ja: "日本語" }
 
 function languageName(code: string, text: Text) {
   if (code === "auto") return text("localize.task.config.auto.detect")
@@ -81,7 +81,7 @@ function normalize(config: TaskConfig, runtime: Runtime): TaskConfig {
     subtitle_alignment: config.output_mode === "both" ? config.subtitle_alignment ?? null : null }
 }
 
-// 原文 / 目标语言的可选项，随所选识别、翻译与配音模型变化。
+// Tùy chọn ngôn ngữ nguồn / đích, thay đổi theo mô hình nhận dạng, dịch và lồng tiếng đã chọn.
 function languageChoices(config: TaskConfig, runtime: Runtime) {
   const asr = selectedModel(runtime, "asr", config.asr)
   const translation = selectedModel(runtime, "translation", config.translation)
@@ -147,7 +147,7 @@ function adapterName(adapter: string, text: Text) {
   return name ? text(name) : adapter
 }
 
-// 模型名为主，适配器与设备作为次要信息。
+// Tên mô hình là chính; bộ điều hợp và thiết bị là thông tin phụ.
 function ModelLabel({ value, text, runtime }: { value: ModelSelection; text: Text; runtime: Runtime }) {
   return <span className="min-w-0 truncate">
     <span className="font-medium text-foreground">{value.model}</span>{" "}
@@ -159,7 +159,7 @@ function ModelLabel({ value, text, runtime }: { value: ModelSelection; text: Tex
 
 const ESTIMATE_TIMING = "estimate"
 
-// 每组设置用一种 logo 色点缀图标。
+// Mỗi nhóm cài đặt dùng một màu logo để điểm xuyết biểu tượng.
 const TINTS = {
   neutral: "bg-accent text-muted-foreground",
   blue: "bg-[rgb(0_174_236/0.14)] text-[#0277b5] dark:text-[#5ccbf5]",
@@ -186,7 +186,7 @@ function ConfigRow({ icon: Icon, tint, title, description, children }: {
   </div>
 }
 
-// 可见的是简短说明；srPrefix 补全读屏时的完整名称（如“语音识别模型”）。
+// Hiển thị phần mô tả ngắn; srPrefix bổ sung tên đầy đủ khi đọc màn hình (ví dụ “Mô hình nhận dạng giọng nói”)。
 function Field({ id, caption, srPrefix, children }: {
   id?: string; caption: string; srPrefix?: string; children: ReactNode
 }) {

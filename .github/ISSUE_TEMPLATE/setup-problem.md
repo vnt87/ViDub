@@ -1,25 +1,25 @@
 ---
-name: 环境配置问题
-about: 反馈安装、运行环境、依赖或模型准备过程中的问题
-title: "[环境配置] "
+name: Vấn đề cấu hình môi trường
+about: Báo vấn đề trong quá trình cài đặt, môi trường chạy, phụ thuộc hoặc chuẩn bị mô hình
+title: "[Cấu hình môi trường] "
 labels: ''
 assignees: ''
 ---
 
-### 问题描述
+### Mô tả vấn đề
 
-请描述环境配置过程中遇到的问题及出错前的操作。
+Hãy mô tả vấn đề gặp phải khi cấu hình môi trường và các thao tác trước khi lỗi xảy ra.
 
-### 环境信息
+### Thông tin môi trường
 
 ```text
 YouDub:
-系统:
-阶段:
+Hệ thống:
+Giai đoạn:
 ```
 
-### 诊断日志
+### Nhật ký chẩn đoán
 
-请粘贴环境配置页「复制日志」得到的完整诊断日志，并补充相关截图（如有）。
+Hãy dán toàn bộ nhật ký chẩn đoán lấy từ nút "Sao chép nhật ký" trên trang cấu hình môi trường, và bổ sung ảnh chụp liên quan (nếu có).
 
-请移除 API Key、Token、密码等敏感信息。
+Hãy xóa các thông tin nhạy cảm như API Key, Token, mật khẩu.

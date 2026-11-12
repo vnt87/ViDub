@@ -27,7 +27,7 @@ function fixture(preference) {
 }
 test('shipped business and official dictionaries have all keys and matching parameters', async () => {
   const result = await checkLocales()
-  assert.deepEqual(result.languages, ['zh', 'en', 'ja'])
+  assert.deepEqual(result.languages, ['vi', 'en', 'ja'])
   assert.ok(result.businessKeys > 500)
 })
 test('missing translations and damaged interpolation fail the build gate', () => {
@@ -47,10 +47,10 @@ test('official locale restores Japanese, translates settings and persists switch
     assert.equal(writes.length, 0)
     ctx.locale.setLocale('en')
     assert.equal(ctx.locale.bind('youdub')('nav.newTask'), 'New task')
-    ctx.locale.setLocale('zh')
-    assert.equal(ctx.locale.bind('youdub')('nav.newTask'), '新建任务')
+    ctx.locale.setLocale('vi')
+    assert.equal(ctx.locale.bind('youdub')('nav.newTask'), 'Tác vụ mới')
     ctx.locale.setLocale('ja')
-    assert.deepEqual(writes, [['preference', 'en'], ['preference', 'zh'], ['preference', 'ja']])
+    assert.deepEqual(writes, [['preference', 'en'], ['preference', 'vi'], ['preference', 'ja']])
   } finally { dispose() }
 })
 test('a fourth plugin language enters the official catalog and uses upstream fallback', async () => {
@@ -60,7 +60,8 @@ test('a fourth plugin language enters the official catalog and uses upstream fal
     applyLocales(ctx)
     registerLanguagePack(ctx, { id: 'fr', label: 'Français', fallback: 'en', messages: { 'nav.newTask': 'Nouvelle tâche' } }, { settings: { title: 'Paramètres' } })
     assert.equal(ctx.locale.getLocale().active, 'fr')
-    assert.equal(ctx.locale.getLocale().locales.length, 4)
+    // The vendor framework always ships its built-in zh and en catalog entries; YouDub adds vi, ja and the fixture language.
+    assert.equal(ctx.locale.getLocale().locales.length, 5)
     assert.equal(ctx.locale.bind('youdub')('nav.newTask'), 'Nouvelle tâche')
     assert.equal(ctx.locale.bind('youdub')('player.play'), 'Play')
     assert.equal(ctx.locale.bind('settings')('title'), 'Paramètres')

@@ -1,6 +1,6 @@
 import type {LocalizedText} from './contracts'
 
-export function text(value: LocalizedText | undefined, language = 'zh'): string {
+export function text(value: LocalizedText | undefined, language = 'vi'): string {
   return typeof value === 'string' ? value : value?.translations?.[language] ?? value?.default ?? ''
 }
 export function matchRoute(path: string, pattern: string): Record<string, string> | null {
